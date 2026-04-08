@@ -1,0 +1,84 @@
+<?php
+
+namespace Workdo\Assets\Http\Controllers;
+
+use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
+use Workdo\Assets\Entities\Asset;
+use Workdo\Assets\Entities\AssetExtra;
+use Workdo\Assets\Entities\AssetUtility;
+use Workdo\Assets\Events\CreateAssetExtra;
+
+class AssetExtraController extends Controller
+{
+    /**
+     * Show the form for creating a new resource.
+     * @return Renderable
+     */
+    public function create($id)
+    {
+        if (Auth::user()->isAbleTo('assets extra create'))
+        {
+            if(isset($id))
+            {
+                $asset = Asset::find($id);
+                return view('assets::extra.create', compact('asset'));
+            } else {
+                redirect()->back()->with('error', __('Assets not found.'));
+            }
+        } else {
+            return response()->json(['error' => __('Permission denied.')], 401);
+        }
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     * @param Request $request
+     * @return Renderable
+     */
+    public function store(Request $request,$id)
+    {
+        if (Auth::user()->isAbleTo('assets extra create'))
+        {
+            $validator = \Validator::make(
+                $request->all(),
+                [
+                    'serial_code' => 'required',
+                    'quantity' => 'required',
+                    'date' => 'required',
+                ]
+            );
+            if ($validator->fails()) {
+                $messages = $validator->getMessageBag();
+
+                return redirect()->back()->with('error', $messages->first());
+            }
+            $asset = Asset::find($id);
+            $asset->quantity   = $asset->quantity + $request->quantity;
+            $asset->purchase_cost   = $asset->quantity * $asset->assets_unit;
+            $asset->save();
+
+            $assetextra                 = new AssetExtra();
+            $assetextra->asset_id       = $asset->id;
+            $assetextra->code           = $request->serial_code;
+            $assetextra->quantity       = $request->quantity;
+            $assetextra->date           = $request->date;
+            $assetextra->description    = $request->description;
+            $assetextra->save();
+
+            event(new CreateAssetExtra($request,$assetextra));
+            $success = AssetUtility::AssetQuantity($assetextra->asset_id,$assetextra->quantity,$assetextra->date,'Extra');
+
+            if($success){
+                return redirect()->route('asset.index')->with('success', __('The asset extra has been created successfully.'));
+            } else {
+                return redirect()->back()->with('error', __('Failed to create Extra Asset.'));
+            }
+
+        } else {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+}

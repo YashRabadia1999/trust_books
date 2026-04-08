@@ -1,0 +1,10 @@
+{
+    "name": "SmsCredit",
+    "alias": "SMS Credit",
+    "description": "SMS Credit Purchase and Management Module with Hubtel Payment Integration",
+    "priority": 576,
+    "version": 1.0,
+    "monthly_price": 0,
+    "yearly_price": 0,
+    "package_name": "sms-credit"
+}

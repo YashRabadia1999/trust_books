@@ -1,0 +1,10 @@
+{
+    "name": "PetCare",
+    "alias": "Pet Care",
+    "description": "",
+    "priority": 744,
+    "version":1.0,
+    "monthly_price": 0,
+    "yearly_price": 0,
+    "package_name":"pet-care"
+}

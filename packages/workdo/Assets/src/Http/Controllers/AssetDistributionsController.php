@@ -1,0 +1,111 @@
+<?php
+
+namespace Workdo\Assets\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
+use Workdo\Assets\Entities\Asset;
+use Workdo\Assets\Entities\AssetDistribution;
+use Workdo\Assets\Events\CreateAssetDistribution;
+use Workdo\Assets\Entities\AssetUtility;
+use Workdo\Hrm\Entities\Branch;
+
+class AssetDistributionsController extends Controller
+{
+
+    /**
+     * Show the form for creating a new resource.
+     * @return Renderable
+     */
+    public function create($id)
+    {
+        if (Auth::user()->isAbleTo('assets distribution create'))
+        {
+            if(isset($id))
+            {
+                $asset = Asset::find($id);
+                $employees = [];
+                $employees = User::where('workspace_id', getActiveWorkSpace())->where('created_by', '=', Auth::user()->id)->emp()->get()->pluck('name', 'id');
+                if (module_is_active('Hrm')) {
+                    $branches = Branch::where('created_by', creatorId())->where('workspace',getActiveWorkSpace())->get()->pluck('name','id');
+                    return view('assets::distributions.create',compact('asset','employees','branches'));
+                }
+                return view('assets::distributions.create',compact('asset','employees'));
+            } else {
+                redirect()->back()->with('error', __('Assets not found.'));
+            }
+
+        } else {
+            return response()->json(['error' => __('Permission denied.')], 401);
+        }
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     * @param Request $request
+     * @return Renderable
+     */
+    public function store(Request $request, $id)
+    {
+        if (Auth::user()->isAbleTo('assets distribution create')) {
+
+            $validator = \Validator::make(
+                $request->all(),
+                [
+                    'employee_id'   => 'required',
+                    'serial_code'   => 'required',
+                    'assign_date'   => 'required',
+                    'return_date'   => 'required',
+                    'dist_number'   => 'required',
+                    'dis_quantity'  => 'required',
+                    'description'  => 'required',
+                    // 'assets_branch' => 'required',
+                ]
+            );
+
+            if ($validator->fails()) {
+                $messages = $validator->getMessageBag();
+
+                return redirect()->back()->with('error', $messages->first());
+            }
+
+            $asset = Asset::find($id);
+
+            if($asset->quantity >= $request->dis_quantity){
+
+                $asset->quantity   = $asset->quantity - $request->dis_quantity;
+                $asset->purchase_cost   = $asset->quantity * $asset->assets_unit;
+                $asset->save();
+            }else{
+                return redirect()->back()->with('error', __('Assets Out Of Stock.'));
+            }
+
+            $assetdistribution                  = new AssetDistribution();
+            $assetdistribution->employee_id     = $request->employee_id;
+            $assetdistribution->serial_code     = $request->serial_code;
+            $assetdistribution->dist_number     = $request->dist_number;
+            $assetdistribution->assign_date     = $request->assign_date;
+            $assetdistribution->return_date     = $request->return_date;
+            $assetdistribution->quantity        = $request->dis_quantity;
+            $assetdistribution->assets_branch   = !empty($request->assets_branch) ? $request->assets_branch : null ;
+            $assetdistribution->notes           = !empty($request->description) ? $request->description : null;
+            $assetdistribution->save();
+
+            event(new CreateAssetDistribution($request,$assetdistribution , $asset));
+
+            $success = AssetUtility::AssetQuantity($asset->id,'-'.$assetdistribution->quantity,$assetdistribution->assign_date,'Distribute');
+
+            if($success){
+                return redirect()->route('asset.index')->with('success', __('The asset distribution has been created successfully.'));
+            } else {
+                return redirect()->back()->with('error', __('Failed to create Asset Distribution.'));
+            }
+
+        } else {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+}

@@ -1,0 +1,67 @@
+IP,Date,Time,Accepted-cookies,Device type,Browser anguage,Browser name,OS Name,Country,Region,RegionName,City,Zipcode,Lat,Lon
+49.36.83.154,2023-06-10,11:24:47 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Surat,395007,21.1888,72.8293
+103.170.214.31,2025-07-31,20:50:40 UTC,necessary,desktop,en,Chrome,Windows,India,MH,Maharashtra,Nashik,422222,20.0024,73.7945
+103.170.214.31,2025-07-31,20:51:26 UTC,necessary,desktop,en,Chrome,Windows,India,MH,Maharashtra,Nashik,422222,20.0024,73.7945
+154.161.29.162,2025-07-31,23:29:00 UTC,necessary,desktop,en,Chrome,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.161.29.162,2025-07-31,23:58:53 UTC,necessary,desktop,en,Firefox,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.161.163.42,2025-08-01,08:06:35 UTC,necessary,desktop,en,Firefox,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.161.43.98,2025-08-05,23:35:11 UTC,necessary,desktop,en,Chrome,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+117.98.135.169,2025-08-08,05:55:38 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,382350,23.0276,72.5871
+117.98.135.169,2025-08-08,06:45:48 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,382350,23.0276,72.5871
+154.161.234.1,2025-08-11,17:55:53 UTC,necessary,desktop,en,Firefox,Linux,Ghana,AH,Ashanti Region,Kumasi,,6.6816,-1.6221
+102.176.75.190,2025-08-11,18:29:50 UTC,necessary,mobile,en,Chrome,iOS,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+152.58.60.41,2025-08-21,13:16:26 UTC,necessary,desktop,en,Chrome,OS X,India,GJ,Gujarat,Ahmedabad,380001,23.0276,72.5871
+154.161.144.15,2025-08-22,00:22:29 UTC,necessary,desktop,en,Chrome,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.160.21.98,2025-08-24,01:00:57 UTC,necessary,desktop,en,Chrome,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.160.21.98,2025-08-24,11:16:01 UTC,necessary,tablet,en,Chrome,Android,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+102.176.94.236,2025-08-25,13:25:47 UTC,necessary,desktop,en,Chrome,Windows,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+103.156.145.190,2025-08-26,04:59:48 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Gandhinagar,382421,23.2167,72.6833
+154.161.153.232,2025-09-01,17:45:43 UTC,necessary,desktop,en,Edge,Windows,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.161.153.232,2025-09-01,18:41:50 UTC,necessary,tablet,en,Chrome,Android,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+103.156.145.190,2025-09-02,04:18:48 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Gandhinagar,382421,23.2167,72.6833
+154.160.18.2,2025-09-03,11:39:55 UTC,necessary,desktop,en,Firefox,Windows,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+103.156.145.190,2025-09-05,06:31:49 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Gandhinagar,382421,23.2167,72.6833
+154.160.16.204,2025-09-09,06:55:00 UTC,necessary,desktop,en,Edge,Windows,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+103.156.145.207,2025-09-10,04:36:16 UTC,necessary,desktop,en,Chrome,OS X,India,GJ,Gujarat,Gandhinagar,382421,23.2167,72.6833
+103.156.145.207,2025-09-10,05:59:25 UTC,necessary,desktop,en,Chrome,OS X,India,GJ,Gujarat,Gandhinagar,382421,23.2167,72.6833
+154.160.18.110,2025-09-11,01:34:19 UTC,necessary,tablet,en,Chrome,Android,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+49.36.68.203,2025-09-11,09:57:02 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Ahmedabad,380052,23.0276,72.5871
+154.161.45.1,2025-09-15,17:08:53 UTC,necessary,desktop,en,Chrome,Windows,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+103.86.19.189,2025-09-19,10:15:15 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,380007,23.0276,72.5871
+103.86.19.189,2025-09-20,08:34:57 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,380007,23.0276,72.5871
+103.86.19.189,2025-09-20,08:39:35 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,380007,23.0276,72.5871
+103.156.145.130,2025-09-22,10:49:35 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Gandhinagar,382421,23.2167,72.6833
+103.156.145.130,2025-09-23,10:40:33 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Gandhinagar,382421,23.2167,72.6833
+223.182.182.69,2025-10-02,06:24:09 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,380059,23.0276,72.5871
+49.36.67.31,2025-10-03,14:02:37 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,382350,23.0276,72.5871
+154.160.7.55,2025-10-03,16:59:36 UTC,necessary,desktop,en,Chrome,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.161.50.176,2025-10-09,09:12:22 UTC,necessary,desktop,en,Chrome,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+49.36.116.252,2025-10-09,09:17:44 UTC,necessary,desktop,en,Chrome,Linux,India,MH,Maharashtra,Mumbai,400017,19.0748,72.8856
+154.160.1.241,2025-10-09,11:20:23 UTC,necessary,desktop,en,Chrome,Windows,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.161.11.169,2025-10-09,12:14:19 UTC,necessary,desktop,en,Edge,Windows,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.161.8.108,2025-10-12,08:00:19 UTC,necessary,desktop,en,Firefox,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+43.250.158.56,2025-10-12,19:10:19 UTC,necessary,mobile,en,Chrome,Android,India,GJ,Gujarat,Ahmedabad,380001,23.0276,72.5871
+43.250.158.56,2025-10-12,19:41:29 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Ahmedabad,380001,23.0276,72.5871
+152.59.34.69,2025-10-13,11:49:05 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Surat,395005,21.1981,72.8298
+27.57.174.109,2025-10-13,15:11:56 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,380001,23.0276,72.5871
+103.238.106.36,2025-10-14,14:59:22 UTC,necessary,desktop,en,Chrome,Linux,India,GJ,Gujarat,Ahmedabad,382350,23.0276,72.5871
+202.177.252.23,2025-10-15,19:41:55 UTC,necessary,mobile,en,Chrome,Android,India,MH,Maharashtra,Mumbai,400703,19.0336,73.0118
+103.176.241.110,2025-10-18,07:08:08 UTC,necessary,desktop,en,Chrome,OS X,India,MH,Maharashtra,Pune,411007,18.5211,73.8502
+41.204.44.216,2025-10-18,07:47:35 UTC,necessary,mobile,en,Chrome,iOS,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+103.176.241.110,2025-10-18,14:05:28 UTC,necessary,desktop,en,Chrome,OS X,India,MH,Maharashtra,Pune,411007,18.5211,73.8502
+154.161.20.20,2025-10-18,14:50:05 UTC,necessary,desktop,en,Chrome,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+223.185.63.213,2025-10-19,07:47:43 UTC,necessary,desktop,en,Chrome,Linux,India,JH,Jharkhand,Jamshedpur,831001,22.8006,86.1871
+197.210.76.227,2025-10-30,09:45:37 UTC,necessary,mobile,en,Chrome,Android,Nigeria,FC,FCT,Abuja,,9.0567,7.4969
+197.210.76.227,2025-10-30,12:53:17 UTC,necessary,desktop,en,Chrome,Windows,Nigeria,FC,FCT,Abuja,,9.0567,7.4969
+154.161.108.43,2025-11-02,18:31:40 UTC,necessary,desktop,en,Chrome,Linux,Ghana,AH,Ashanti Region,Kumasi,,6.6816,-1.6221
+103.117.184.151,2025-11-04,13:51:09 UTC,necessary,mobile,en,Chrome,Android,India,MH,Maharashtra,Kopargaon,423601,19.8766,74.4801
+43.224.157.42,2025-11-08,08:40:22 UTC,necessary,desktop,en,Edge,Windows,India,KA,Karnataka,Bengaluru,560102,12.9753,77.591
+128.185.168.205,2025-11-23,19:49:42 UTC,necessary,desktop,en,Chrome,Windows,India,PB,Punjab,Phagwāra,144411,31.2281,75.7787
+152.58.78.227,2025-11-24,17:18:56 UTC,necessary,desktop,en,Edge,Windows,India,PB,Punjab,Jalandhar,144004,31.33,75.5844
+210.89.61.44,2025-11-25,10:16:25 UTC,necessary,desktop,en,Chrome,Windows,India,PB,Punjab,Phagwāra,144411,31.2281,75.7787
+117.97.168.100,2026-02-17,13:04:00 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,380059,23.0276,72.5871
+117.97.168.100,2026-02-17,13:04:56 UTC,necessary,desktop,en,Chrome,Windows,India,GJ,Gujarat,Ahmedabad,380059,23.0276,72.5871
+49.34.110.208,2026-02-17,17:28:09 UTC,necessary,mobile,en,Chrome,Android,India,GJ,Gujarat,Ahmedabad,380001,23.0276,72.5871
+154.161.173.206,2026-02-18,21:58:18 UTC,necessary,desktop,en,Firefox,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+154.161.173.206,2026-02-18,22:31:59 UTC,necessary,desktop,en,Chrome,Linux,Ghana,AA,Greater Accra Region,Accra,,5.5545,-0.1902
+171.61.160.24,2026-04-02,03:06:42 UTC,necessary,mobile,en,Chrome,Android,India,GJ,Gujarat,Ahmedabad,380009,23.0276,72.5871

@@ -1,0 +1,23 @@
+{
+    "name": "workdo/sms-credit",
+    "description": "SMS Credit Purchase Module",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Workdo",
+            "email": "info@workdo.io"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Workdo\\SmsCredit\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Workdo\\SmsCredit\\Providers\\SmsCreditServiceProvider"
+            ]
+        }
+    }
+}

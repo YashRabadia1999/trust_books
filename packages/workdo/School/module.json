@@ -1,0 +1,10 @@
+{
+    "name": "School",
+    "alias": "School / Institute Management",
+    "description": "",
+    "priority": 740,
+    "version": 1.9,
+    "monthly_price": 0,
+    "yearly_price": 0,
+    "package_name": "school"
+}

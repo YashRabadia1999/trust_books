@@ -1,0 +1,41 @@
+.theme-avtar svg{
+    width:20px;
+    height:20px;
+}
+.instagram-card-wrp .theme-avtar svg path{
+    stroke:#fff;
+}
+.instagram-card-wrp .theme-avtar{
+    box-shadow:0 6px 30px rgba(182, 186, 203, 0.3);
+}
+
+.instagram-card-wrp .col-12:nth-child(4) .theme-avtar{
+    background-color:var(--bs-blue);
+}
+.instagram-card-wrp .col-12:nth-child(5) .theme-avtar{
+    background-color:var(--bs-lightyellow);
+}
+
+.instagram-card-wrp .card-body h5{
+    font-size:20px;
+}
+.instagram-card-wrp,
+.post-card-wrp,
+.chart-row-gap{
+    row-gap:24px;
+}
+
+/* .instagram-card-wrp  */
+@media screen and (max-width:575px){
+    .instagram-card-wrp,
+    .post-card-wrp,
+    .chart-row-gap{
+        row-gap:20px;
+    }
+}
+@media screen and (max-width:480px){
+    #genderChart .apexcharts-canvas,
+    #deviceChart .apexcharts-canvas{
+        margin:0 auto;
+    }
+}

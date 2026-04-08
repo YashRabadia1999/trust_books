@@ -1,0 +1,35 @@
+<?php
+
+namespace Workdo\DrivingSchool\Events;
+
+use Illuminate\Queue\SerializesModels;
+
+class CreateDrivingLicenceTraking
+{
+    use SerializesModels;
+
+    /**
+     * Create a new event instance.
+     *
+     * @return void
+     */
+    public $request;
+    public $licence_traking;
+
+    public function __construct($request ,$licence_traking)
+    {
+        $this->request = $request;
+        $this->licence_traking = $licence_traking;
+
+    }
+
+    /**
+     * Get the channels the event should be broadcast on.
+     *
+     * @return array
+     */
+    public function broadcastOn()
+    {
+        return [];
+    }
+}

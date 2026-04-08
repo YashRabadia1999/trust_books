@@ -1,0 +1,50 @@
+<?php
+
+namespace Workdo\DrivingSchool\Providers;
+
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as Provider;
+use App\Events\CompanyMenuEvent;
+use App\Events\CompanySettingEvent;
+use App\Events\CompanySettingMenuEvent;
+use App\Events\DefaultData;
+use App\Events\GivePermissionToRole;
+use Workdo\DrivingSchool\Listeners\CompanyMenuListener;
+use Workdo\DrivingSchool\Listeners\CompanySettingListener;
+use Workdo\DrivingSchool\Listeners\CompanySettingMenuListener;
+use Workdo\DrivingSchool\Listeners\DataDefault;
+use Workdo\DrivingSchool\Listeners\GiveRoleToPermission;
+
+class EventServiceProvider extends Provider
+{
+    /**
+     * Determine if events and listeners should be automatically discovered.
+     *
+     * @return bool
+     */
+    protected $listen = [
+        CompanyMenuEvent::class => [
+            CompanyMenuListener::class,
+        ],
+        CompanySettingEvent::class => [
+            CompanySettingListener::class,
+        ],
+        DefaultData::class => [
+            DataDefault::class,
+        ],
+        GivePermissionToRole::class => [
+            GiveRoleToPermission::class,
+        ],
+    ];
+
+    /**
+     * Get the listener directories that should be used to discover events.
+     *
+     * @return array
+     */
+    protected function discoverEventsWithin()
+    {
+        return [
+            __DIR__ . '/../Listeners',
+        ];
+    }
+}

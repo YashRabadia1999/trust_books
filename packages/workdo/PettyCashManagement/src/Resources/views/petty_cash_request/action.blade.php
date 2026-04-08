@@ -1,0 +1,31 @@
+@permission('request approve')
+    <div class="action-btn me-2">
+        <a class="mx-3 btn btn-sm align-items-center bg-primary"
+            data-url="{{ route('petty-cash-request.show', $PettyCashRequest->id) }}" data-ajax-popup="true"
+            data-size="md" data-bs-toggle="tooltip" title="" data-title="{{ __('Request Action') }}"
+            data-bs-original-title="{{ __('Action') }}">
+            <i class="ti ti-caret-right text-white"></i>
+        </a>
+    </div>
+@endpermission
+
+@permission('request edit')
+<div class="action-btn me-2">
+    <a href="#" class="mx-3 bg-info btn btn-sm align-items-center" data-url="{{ route('petty-cash-request.edit',$PettyCashRequest->id) }}" data-size="md" class="dropdown-item" data-ajax-popup="true" data-bs-toggle="tooltip" data-bs-original-title="{{ __('Edit') }}" data-title="{{__('Edit Petty Cash Request')}}">
+        <span class="text-white"  data-title="{{__('Edit Petty Cash Request')}}">
+            <i class="ti ti-pencil"></i>
+        </span>
+    </a>
+</div>
+@endpermission
+
+@permission('request delete')
+<div class="action-btn">
+    {{ Form::open(['route' => ['petty-cash-request.destroy', $PettyCashRequest->id], 'class' => 'm-0']) }}
+    @method('DELETE')
+    <a href="#" class="mx-3 btn btn-sm bg-danger align-items-center bs-pass-para show_confirm" data-bs-toggle="tooltip" title="" data-bs-original-title="Delete" aria-label="Delete" data-confirm-yes="delete-form-{{ $PettyCashRequest->id }}" data-confirm="{{ __('Are You Sure?') }}" data-text="{{ __('This action can not be undone. Do you want to continue?') }}">
+        <i class="ti ti-trash text-white text-white"></i>
+    </a>
+    {{ Form::close() }}
+</div>
+@endpermission

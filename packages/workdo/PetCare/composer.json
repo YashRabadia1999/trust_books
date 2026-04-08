@@ -1,0 +1,25 @@
+{
+    "name": "workdo/pet-care",
+    "description": "Description for pet-care package",
+    "type": "library",
+    "license": "MIT",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Workdo\\PetCare\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "WorkDo",
+            "email": "support@workdo.io"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Workdo\\PetCare\\Providers\\PetCareServiceProvider"
+            ]
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "name": "SocialMediaAnalytics",
+    "alias": "Social Media Analytics",
+    "description": "",
+    "priority": 1025,
+    "version":1.0,
+    "monthly_price": 0,
+    "yearly_price": 0,
+    "package_name":"social-media-analytics"
+}
