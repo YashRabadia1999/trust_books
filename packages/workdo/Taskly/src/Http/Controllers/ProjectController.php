@@ -33,6 +33,7 @@ use Workdo\Taskly\Entities\Task;
 use Workdo\Taskly\Entities\TaskFile;
 use Workdo\Taskly\Entities\UserProject;
 use Workdo\Taskly\Entities\VenderProject;
+use Workdo\Taskly\Entities\ProjectPayment;
 use Workdo\TimeTracker\Entities\TimeTracker;
 use Workdo\Taskly\Events\CreateBug;
 use Workdo\Taskly\Events\CreateMilestone;
@@ -281,7 +282,10 @@ class ProjectController extends Controller
                         'duration' => 'week',
                     ]
                 );
-                return view('taskly::projects.show', compact('project', 'daysleft', 'chartData'));
+                $totalPaid = ProjectPayment::where('project_id', $project->id)->where('type', 'payment')->sum('amount');
+                $totalRemaining = $project->budget - $totalPaid;
+
+                return view('taskly::projects.show', compact('project', 'daysleft', 'chartData', 'totalPaid', 'totalRemaining'));
             }
             return redirect()->back()->with('error', __('Project not found.'));
         } else {
@@ -364,7 +368,22 @@ class ProjectController extends Controller
     {
         if (Auth::user()->isAbleTo('project edit')) {
             $oldStatus = $project->status;
+            $oldBudget = $project->budget;
+            $newBudget = $request->budget;
+
             $project->update($request->all());
+
+            if ($oldBudget != $newBudget) {
+                // Log Project Budget Change
+                ProjectPayment::create([
+                    'project_id' => $project->id,
+                    'amount' => abs($newBudget - $oldBudget),
+                    'date' => date('Y-m-d'),
+                    'type' => 'budget_addition',
+                    'notes' => __('Main Project Budget updated') . ($newBudget > $oldBudget ? ' (Increased)' : ' (Decreased)'),
+                    'created_by' => Auth::user()->id,
+                ]);
+            }
 
             if (module_is_active('CustomField')) {
                 \Workdo\CustomField\Entities\CustomField::saveData($project, $request->customField);
@@ -1060,6 +1079,23 @@ class ProjectController extends Controller
                 $post['assign_to'] = implode(",", $request->assign_to);
                 $post['workspace'] = getActiveWorkSpace();
                 $task              = Task::create($post);
+
+                if (!empty($request->budget) && $request->budget > 0) {
+                    $project->budget += $request->budget;
+                    $project->save();
+
+                    // Log Budget Addition
+                    ProjectPayment::create([
+                        'project_id' => $project->id,
+                        'amount' => $request->budget,
+                        'date' => date('Y-m-d'),
+                        'type' => 'budget_addition',
+                        'task_id' => $task->id,
+                        'notes' => __('Budget added via task: ') . $task->title,
+                        'created_by' => Auth::user()->id,
+                    ]);
+                }
+
                 ActivityLog::create(
                     [
                         'user_id' => Auth::user()->id,
@@ -1243,6 +1279,28 @@ class ProjectController extends Controller
             $post['status']    = $request->stage_id;
             $post['assign_to'] = implode(",", $request->assign_to);
             $task              = Task::find($taskID);
+
+            // Handle Budget Adjustment logic
+            $oldBudget = $task->budget ?? 0;
+            $newBudget = $request->budget ?? 0;
+
+            if ($oldBudget != $newBudget) {
+                $diff = $newBudget - $oldBudget;
+                $project->budget += $diff;
+                $project->save();
+
+                // Log Budget Adjustment
+                ProjectPayment::create([
+                    'project_id' => $project->id,
+                    'amount' => abs($diff),
+                    'date' => date('Y-m-d'),
+                    'type' => 'budget_addition', // We'll label adjustments under budget_addition type
+                    'task_id' => $task->id,
+                    'notes' => __('Budget adjusted via task: ') . $task->title . ($diff > 0 ? ' (Increased)' : ' (Decreased)'),
+                    'created_by' => Auth::user()->id,
+                ]);
+            }
+
             $oldStatus = $task->status;
             $oldAssignTo = explode(",", $task->assign_to);
             $task->update($post);
@@ -2749,5 +2807,41 @@ class ProjectController extends Controller
         $query = Invoice::where('workspace', getActiveWorkSpace())->where('account_type', 'Taskly')->where('category_id', $id);
         $invoices = $query->with('customers')->orderBy('id', 'desc')->get();
         return view('taskly::projects.invoice', compact('project', 'id', 'invoices'));
+    }
+
+    public function paymentCreate($project_id)
+    {
+        $project = Project::find($project_id);
+        return view('taskly::projects.paymentCreate', compact('project'));
+    }
+
+    public function paymentStore(Request $request, $project_id)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'date' => 'required|date',
+        ]);
+
+        ProjectPayment::create([
+            'project_id' => $project_id,
+            'amount' => $request->amount,
+            'date' => $request->date,
+            'notes' => $request->notes,
+            'created_by' => Auth::user()->id,
+        ]);
+
+        return redirect()->back()->with('success', __('Payment recorded successfully.'));
+    }
+
+    public function paymentHistory($project_id)
+    {
+        $project = Project::find($project_id);
+        $payments = ProjectPayment::with(['task', 'createdBy'])->where('project_id', $project_id)->orderBy('date', 'desc')->get();
+        
+        $totalPaid = ProjectPayment::where('project_id', $project->id)->where('type', 'payment')->sum('amount');
+        $totalBudget = $project->budget;
+        $totalRemaining = $totalBudget - $totalPaid;
+
+        return view('taskly::projects.paymentHistory', compact('project', 'payments', 'totalPaid', 'totalBudget', 'totalRemaining'));
     }
 }

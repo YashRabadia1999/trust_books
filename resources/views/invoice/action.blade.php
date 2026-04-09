@@ -44,6 +44,12 @@
                 <i class="ti ti-eye  text-white"></i>
             </a>
         </div>
+        <div class="action-btn me-2">
+            <a href="{{ route('invoice.pdf', \Crypt::encrypt($invoice->id)) }}" class="mx-3 btn btn-sm align-items-center bg-primary"
+                data-bs-toggle="tooltip" title="{{ __('Download PDF') }}" download>
+                <i class="ti ti-download text-white"></i>
+            </a>
+        </div>
     @endpermission
 
     @if ($invoice->status != 4)

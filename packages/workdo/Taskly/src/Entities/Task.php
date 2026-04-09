@@ -28,6 +28,7 @@ class   Task extends Model
         'status',
         'order',
         'workspace',
+        'budget',
     ];
 
 

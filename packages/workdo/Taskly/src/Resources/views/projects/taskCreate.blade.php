@@ -38,6 +38,10 @@
                     </select>
                 </div>
                 <div class="form-group col-md-12">
+                    <label class="form-label">{{ __('Budget')}}</label>
+                    <input type="number" class="form-control form-control-light" id="task-budget" placeholder="{{ __('Enter Budget')}}" name="budget" step="0.01" min="0">
+                </div>
+                <div class="form-group col-md-12">
                     <label class="form-label">{{ __('Assign To')}}</label><x-required></x-required>
 
                     <select class=" multi-select choices" id="assign_to" name="assign_to[]"  multiple="multiple" data-placeholder="{{ __('Select Users ...') }}" required>
@@ -77,9 +81,9 @@
             <input type="submit" value="{{ __('Create')}}" class="btn  btn-primary" id="submit">
         </div>
     </form>
-     <link rel="stylesheet" href="{{ asset('packages/workdo/Taskly/src/Resources/assets/libs/bootstrap-daterangepicker/daterangepicker.css')}} ">
-     <script src="{{ asset('packages/workdo/Taskly/src/Resources/assets/libs/moment/min/moment.min.js')}}"></script>
-     <script src="{{ asset('packages/workdo/Taskly/src/Resources/assets/libs/bootstrap-daterangepicker/daterangepicker.js')}}"></script>
+     <link rel="stylesheet" href="{{ asset('assets/libs/bootstrap-daterangepicker/daterangepicker.css')}}">
+     <script src="{{ asset('assets/libs/moment/moment.min.js')}}"></script>
+     <script src="{{ asset('assets/libs/bootstrap-daterangepicker/daterangepicker.js')}}"></script>
 
     <script>
         $(function () {

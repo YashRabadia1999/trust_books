@@ -12,6 +12,7 @@
         "aws/aws-sdk-php": "^3.303",
         "bacon/bacon-qr-code": "^3.0",
         "barryvdh/laravel-debugbar": "^3.13",
+        "barryvdh/laravel-dompdf": "^3.1",
         "braintree/braintree_php": "^6.18",
         "coingate/coingate-php": "^4.1",
         "dcblogdev/laravel-box": "^2.1",

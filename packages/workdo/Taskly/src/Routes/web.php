@@ -63,6 +63,12 @@ Route::middleware(['web','auth','verified','PlanModuleCheck:Taskly'])->group(fun
     Route::get('projects/{id}/proposal',[ProjectController::class,'proposal'])->name('projects.proposal');
     Route::get('projects/{id}/invoice',[ProjectController::class,'invoice'])->name('projects.invoice');
 
+    // Project Payment
+    Route::get('projects/{id}/payment/create',[ProjectController::class,'paymentCreate'])->name('projects.payment.create');
+    // For storing payment, I'll use store method
+    Route::post('projects/{id}/payment/store',[ProjectController::class,'paymentStore'])->name('projects.payment.store');
+    Route::get('projects/{id}/payment/history',[ProjectController::class,'paymentHistory'])->name('projects.payment.history');
+
 
 
     // bug report

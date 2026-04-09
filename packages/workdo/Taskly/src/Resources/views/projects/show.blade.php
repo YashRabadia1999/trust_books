@@ -178,7 +178,7 @@
         </div>
         <div class="col-xxl-6 col-12">
             <div class="row dashboard-wrp">
-                 <div class="col-sm-6 col-12">
+                <div class="col-sm-6 col-12">
                     <div class="dashboard-project-card">
                         <div class="card-inner  d-flex justify-content-between">
                             <div class="card-content">
@@ -190,7 +190,7 @@
                             <h3 class="mb-0">{{ $project->countTask() }}</h3>
                         </div>
                     </div>
-                </div>              
+                </div>
                 <div class="col-sm-6 col-12">
                     <div class="dashboard-project-card">
                         <div class="card-inner d-flex justify-content-between">
@@ -218,21 +218,67 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-12">
+                @endif
+                <div class="col-sm-6 col-12">
+                    <div class="dashboard-project-card">
+                        <div class="card-inner d-flex justify-content-between">
+                            <div class="card-content w-100">
+                                <div class="theme-avtar bg-white">
+                                    <i class="ti ti-credit-card"></i>
+                                </div>
+                                <div class="d-flex gap-2 mt-3">
+                                    <a href="#" class="btn btn-sm btn-primary w-100 d-flex align-items-center justify-content-center" data-ajax-popup="true" data-size="md" data-title="{{ __('Record Payment') }}" data-url="{{ route('projects.payment.create', $project->id) }}">
+                                        <i class="ti ti-plus me-1"></i> {{ __('Pay') }}
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-secondary w-100 d-flex align-items-center justify-content-center" data-ajax-popup="true" data-size="lg" data-title="{{ __('Payment History') }}" data-url="{{ route('projects.payment.history', $project->id) }}">
+                                        <i class="ti ti-history me-1"></i> {{ __('History') }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @if ($project->type == 'project')
+                    <div class="col-sm-4 col-12">
                         <div class="dashboard-project-card">
-                            <div class="card-inner  d-flex justify-content-between">
+                            <div class="card-inner d-flex justify-content-between">
                                 <div class="card-content">
                                     <div class="theme-avtar bg-white">
                                         <i class="fas fa-money-bill-alt"></i>
                                     </div>
-                                    <h3 class="mt-3 mb-0">{{ __('Budget') }}</h3>
+                                    <h3 class="mt-3 mb-0">{{ __('Total Budget') }}</h3>
                                 </div>
-                                <h3 class="mb-0">{{ company_setting('defult_currancy') }}
-                                    {{ number_format($project->budget) }}</h3>
+                                <h3 class="mb-0">{{ company_setting('defult_currancy') }} {{ number_format($project->budget) }}</h3>
                             </div>
                         </div>
                     </div>
-                @endif                
+                    <div class="col-sm-4 col-12">
+                        <div class="dashboard-project-card">
+                            <div class="card-inner d-flex justify-content-between">
+                                <div class="card-content">
+                                    <div class="theme-avtar bg-white">
+                                        <i class="ti ti-circle-check"></i>
+                                    </div>
+                                    <h3 class="mt-3 mb-0">{{ __('Paid Amount') }}</h3>
+                                </div>
+                                <h3 class="mb-0">{{ company_setting('defult_currancy') }} {{ number_format($totalPaid) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-12">
+                        <div class="dashboard-project-card">
+                            <div class="card-inner d-flex justify-content-between">
+                                <div class="card-content">
+                                    <div class="theme-avtar bg-white">
+                                        <i class="ti ti-report-money text-danger"></i>
+                                    </div>
+                                    <h3 class="mt-3 mb-0">{{ __('Remaining Amount') }}</h3>
+                                </div>
+                                <h3 class="mb-0">{{ company_setting('defult_currancy') }} {{ number_format($totalRemaining) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
