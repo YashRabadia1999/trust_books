@@ -36,6 +36,15 @@ class PaymentDataTable extends DataTable
                 $url = route('payment.description', $payment->id);
                 $html = '<a class="action-item" data-url="' . $url . '" data-ajax-popup="true" data-bs-toggle="tooltip" title="' . __('Description') . '" data-title="' . __('Description') . '"><i class="fa fa-comment"></i></a>';
                 return $html;
+            })
+            ->editColumn('bank_name', function (Payment $payment) {
+                $bank = !empty($payment->bank_name) ? $payment->bank_name : '';
+                $holder = !empty($payment->holder_name) ? $payment->holder_name : '';
+                $name = $bank . ($bank && $holder ? ' - ' : '') . $holder;
+                return !empty($name) ? ucwords($name) : '-';
+            })
+            ->editColumn('vendors_name', function (Payment $payment) {
+                return !empty($payment->vendors_name) ? $payment->vendors_name : '-';
             });
 
 

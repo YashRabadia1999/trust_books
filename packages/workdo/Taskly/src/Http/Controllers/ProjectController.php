@@ -48,6 +48,13 @@ use Workdo\Taskly\Events\DestroyTaskComment;
 use Workdo\Taskly\Events\UpdateBug;
 use Workdo\Taskly\Events\UpdateMilestone;
 use Workdo\Taskly\Events\UpdateProject;
+use Workdo\Account\Entities\Payment;
+use Workdo\Account\Entities\BankAccount;
+use Workdo\Account\Entities\Transaction;
+use Workdo\Account\Entities\Transfer;
+use Workdo\Account\Entities\BillPayment;
+use Workdo\Account\Events\CreatePayment;
+use Workdo\ProductService\Entities\Category;
 use Workdo\Taskly\Events\UpdateTask;
 use Workdo\Taskly\Events\UpdateTaskStage;
 use Workdo\Taskly\Events\ProjectInviteUser;
@@ -2866,6 +2873,63 @@ class ProjectController extends Controller
                     } catch (\Exception $e) {
                         Log::error('Failed to execute Project Payment Recorded email logic for user: ' . $user->email . ' Error: ' . $e->getMessage());
                     }
+                }
+            }
+        }
+
+        // Synchronize with General Payment Module
+        if (module_is_active('Account') && module_is_active('ProductService')) {
+            $project = Project::find($project_id);
+            if ($project) {
+                // Find "Cash" Account for this workspace
+                $bankAccount = BankAccount::where('workspace', $project->workspace)->where('holder_name', 'LIKE', '%cash%')->first();
+                
+                // Find or Create "Project Payment" Category (Type 2 = Expense/Payment)
+                $category = Category::where('workspace_id', $project->workspace)->where('name', 'Project Payment')->where('type', 2)->first();
+                if (!$category) {
+                    $category = new Category();
+                    $category->name = 'Project Payment';
+                    $category->type = 2;
+                    $category->color = '#8280ff';
+                    $category->workspace_id = $project->workspace;
+                    $category->created_by = $project->created_by;
+                    $category->save();
+                }
+
+                if ($bankAccount && $category) {
+                    $accountPayment = new Payment();
+                    $accountPayment->date = $request->date;
+                    $accountPayment->amount = $request->amount;
+                    $accountPayment->account_id = $bankAccount->id;
+                    $accountPayment->vendor_id = 0;
+                    $accountPayment->category_id = $category->id;
+                    $accountPayment->payment_method = 0;
+                    $accountPayment->reference = 'Project Payment';
+                    $accountPayment->description = $request->notes ?? 'Project Payment for ' . $project->name;
+                    $accountPayment->workspace = $project->workspace;
+                    $accountPayment->created_by = $project->created_by;
+                    $accountPayment->save();
+
+                    // Account Module Side Effects
+                    $accountPayment->payment_id = $accountPayment->id;
+                    $accountPayment->type = 'Payment';
+                    $accountPayment->category = $category->name;
+                    $accountPayment->user_id = $accountPayment->vendor_id;
+                    $accountPayment->user_type = 'Vendor';
+                    $accountPayment->account = $bankAccount->id;
+
+                    Transaction::addTransaction($accountPayment);
+                    Transfer::bankAccountBalance($bankAccount->id, $request->amount, 'debit');
+
+                    // Prepare metadata for CreatePayment event
+                    $bill_payment = new BillPayment();
+                    $bill_payment->name = '';
+                    $bill_payment->method = '-';
+                    $bill_payment->date = company_date_formate($request->date);
+                    $bill_payment->amount = currency_format_with_sym($request->amount);
+                    $bill_payment->bill = '';
+
+                    event(new CreatePayment($request, $bill_payment, $accountPayment));
                 }
             }
         }
