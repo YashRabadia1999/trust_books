@@ -682,6 +682,8 @@ if (!function_exists('SetConfigEmail')) {
                 'mail.from.name' => $company_settings['mail_from_name'] ?? 'DataMonk BMS',
             ]);
 
+            \Illuminate\Support\Facades\Mail::purge('smtp');
+
             // Rebind mailer so Laravel uses new config
             app()->forgetInstance('mailer');
             app()->bind('mailer', fn($app) => $app->make(\Illuminate\Mail\MailManager::class)->mailer());

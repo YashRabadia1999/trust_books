@@ -22,6 +22,7 @@ class EmailTemplatesTableSeeder extends Seeder
         $emailTemplate = [
             'User Invited',
             'Project Assigned',
+            'Project Payment Recorded',
         ];
         $defaultTemplate = [
            'User Invited' => [
@@ -264,6 +265,36 @@ class EmailTemplatesTableSeeder extends Seeder
                     <p>Teşekkür ederim</p>
                     <p>{company_name}</p>
                     <p><span style="color: #000000; font-family: "Open Sans", sans-serif; font-size: 14px; background-color: #ffffff;"><strong>{app_name}</strong></span></p>',
+                ],
+            ],
+
+            'Project Payment Recorded' => [
+                'subject' => 'New Payment Recorded for {project}',
+                'variables' => '{
+                    "App Url": "app_url",
+                    "App Name": "app_name",
+                    "Company Name": "company_name",
+                    "User": "name",
+                    "Project": "project",
+                    "Payment Amount": "payment_amount",
+                    "Payment Date": "payment_date",
+                    "Recorded By": "recorded_by",
+                    "URL": "url"
+                  }',
+                'lang' => [
+                    'en' => '<p><strong>Hello, {name}</strong></p>
+                    <p>A new payment has been recorded for the project <strong>{project}</strong>.</p>
+                    <p><strong>Payment Details:</strong></p>
+                    <ul>
+                    <li><strong>Amount:</strong> {payment_amount}</li>
+                    <li><strong>Date:</strong> {payment_date}</li>
+                    <li><strong>Recorded By:</strong> {recorded_by}</li>
+                    </ul>
+                    <p>You can view the project details by clicking the button below:</p>
+                    <p style="text-align: center;"><a href="{url}" style="background: #6676ef; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Project</a></p>
+                    <p>Thank you,</p>
+                    <p>{company_name}</p>
+                    <p><strong>{app_name}</strong></p>',
                 ],
             ],
 

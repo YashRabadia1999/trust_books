@@ -68,8 +68,6 @@ use Workdo\MusicInstitute\Entities\MusicStudent;
 use Workdo\Newspaper\Entities\AgentDetail;
 use Workdo\Sales\Entities\SalesInvoice;
 use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;
-
 
 class InvoiceController extends Controller
 {
@@ -1052,16 +1050,6 @@ class InvoiceController extends Controller
             } else {
                 $invoice_template = (!empty($company_settings['invoice_template']) ? $company_settings['invoice_template'] : 'template1');
             }
-
-            if(!empty($img)){
-                try {
-                    $type = pathinfo($img, PATHINFO_EXTENSION);
-                    $data = file_get_contents($img);
-                    $img = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                } catch (\Exception $e) {
-                }
-            }
-
             $settings['site_rtl'] = isset($company_settings['site_rtl']) ? $company_settings['site_rtl'] : '';
             $settings['company_name'] = isset($company_settings['company_name']) ? $company_settings['company_name'] : '';
             $settings['company_email'] = isset($company_settings['company_email']) ? $company_settings['company_email'] : '';
@@ -1080,11 +1068,7 @@ class InvoiceController extends Controller
             $settings['invoice_template'] = isset($company_settings['invoice_template']) ? $company_settings['invoice_template'] : '';
             $settings['invoice_color'] = isset($company_settings['invoice_color']) ? $company_settings['invoice_color'] : '';
             $settings['invoice_qr_display'] = isset($company_settings['invoice_qr_display']) ? $company_settings['invoice_qr_display'] : '';
-            
-            $html = view('invoice.templates.' . $invoice_template, compact('invoice', 'commonCustomer', 'color', 'settings', 'customer', 'img', 'font_color', 'customFields', 'bank_details', 'bank_details_list', 'sales_invoice'))->render();
-
-            $pdf = Pdf::loadHTML($html);
-            return $pdf->download(Invoice::invoiceNumberFormat($invoice->invoice_id, $invoice->created_by, $invoice->workspace) . '.pdf');
+            return view('invoice.templates.' . $invoice_template, compact('invoice', 'commonCustomer', 'color', 'settings', 'customer', 'img', 'font_color', 'customFields', 'bank_details', 'bank_details_list', 'sales_invoice'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }

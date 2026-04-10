@@ -2822,13 +2822,53 @@ class ProjectController extends Controller
             'date' => 'required|date',
         ]);
 
-        ProjectPayment::create([
+        $payment = ProjectPayment::create([
             'project_id' => $project_id,
             'amount' => $request->amount,
             'date' => $request->date,
             'notes' => $request->notes,
             'created_by' => Auth::user()->id,
         ]);
+
+        // Send Email Notification to the team assigned to the project
+        $project = Project::find($project_id);
+        if ($project) {
+            $projectUsers = UserProject::where('project_id', $project->id)->get();
+            $objUser = Auth::user();
+            foreach ($projectUsers as $pUser) {
+                $user = User::find($pUser->user_id);
+                if ($user) {
+                    $uArr = [
+                        'name' => $user->name,
+                        'project' => $project->name,
+                        'payment_amount' => currency_format_with_sym($request->amount),
+                        'payment_date' => company_date_formate($request->date),
+                        'recorded_by' => $objUser->name,
+                        'url' => route('projects.show', $project->id),
+                    ];
+                    try {
+                        // Force refresh settings cache for this workspace to ensure SMTP updates are caught
+                        $owner = \App\Models\User::find($project->created_by);
+                        if ($owner && !in_array($owner->type, ['company', 'super admin'])) {
+                            $owner = \App\Models\User::find($owner->created_by);
+                        }
+                        if($owner){
+                            $cacheKey = 'company_settings_' . $project->workspace_id . '_' . $owner->id;
+                            \Illuminate\Support\Facades\Cache::forget($cacheKey);
+                        }
+
+                        Log::info('Attempting to send Project Payment Recorded email to user: ' . $user->email);
+                        $resp = EmailTemplate::sendEmailTemplate('Project Payment Recorded', [$user->email], $uArr, $project->created_by, $project->workspace_id);
+                        if($resp['is_success'] == false)
+                        {
+                            Log::error('Mail delivery failed for ' . $user->email . '. Reason: ' . ($resp['error'] ?? 'Unknown error'));
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Failed to execute Project Payment Recorded email logic for user: ' . $user->email . ' Error: ' . $e->getMessage());
+                    }
+                }
+            }
+        }
 
         return redirect()->back()->with('success', __('Payment recorded successfully.'));
     }
@@ -2837,7 +2877,7 @@ class ProjectController extends Controller
     {
         $project = Project::find($project_id);
         $payments = ProjectPayment::with(['task', 'createdBy'])->where('project_id', $project_id)->orderBy('date', 'desc')->get();
-        
+
         $totalPaid = ProjectPayment::where('project_id', $project->id)->where('type', 'payment')->sum('amount');
         $totalBudget = $project->budget;
         $totalRemaining = $totalBudget - $totalPaid;
