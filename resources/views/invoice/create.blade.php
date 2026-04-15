@@ -345,7 +345,7 @@
 
             var quntityTotalTaxPrice = 0;
 
-            var el = $(this).parent().parent().parent().parent();
+            var el = $(this).closest('tr');
 
             var quantity = $(this).val();
             var price = $(el.find('.price')).val();
@@ -409,7 +409,7 @@
         })
 
         $(document).on('keyup change', '.price', function() {
-            var el = $(this).parent().parent().parent().parent();
+            var el = $(this).closest('tr');
             var price = $(this).val();
 
             var quantity = $(el.find('.quantity')).val();
@@ -475,7 +475,7 @@
         $(document).on('keyup change', '.discount', function() {
             if ($('#invoice_type').val() != 'case') {
 
-                var el = $(this).parent().parent().parent();
+                var el = $(this).closest('tr');
                 var discount = $(this).val();
                 if (discount.length <= 0) {
                     discount = 0;
@@ -589,14 +589,14 @@
                     cache: false,
                     success: function(data) {
                         var item = JSON.parse(data);
-                        $(el.parent().parent().find('.quantity')).val(1);
+                        $(el.closest('tr').find('.quantity')).val(1);
                         if (item.product != null) {
-                            $(el.parent().parent().find('.price')).val(item.product.sale_price);
-                            $(el.parent().parent().parent().find('.pro_description')).val(item.product.description);
+                            $(el.closest('tr').find('.price')).val(item.product.sale_price);
+                            $(el.closest('tr').find('.pro_description')).val(item.product.description);
 
                         } else {
-                            $(el.parent().parent().find('.price')).val(0);
-                            $(el.parent().parent().parent().find('.pro_description')).val('');
+                            $(el.closest('tr').find('.price')).val(0);
+                            $(el.closest('tr').find('.pro_description')).val('');
                         }
 
                         var taxes = '';
@@ -619,13 +619,13 @@
                         if (item.product != null) {
                             var itemTaxPrice = parseFloat((totalItemTaxRate / 100) * (item.product.sale_price * 1));
                         }
-                        $(el.parent().parent().find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
-                        $(el.parent().parent().find('.itemTaxRate')).val(totalItemTaxRate.toFixed(2));
-                        $(el.parent().parent().find('.taxes')).html(taxes);
-                        $(el.parent().parent().find('.tax')).val(tax);
-                        $(el.parent().parent().find('.unit')).html(item.unit);
-                        $(el.parent().parent().find('.discount')).val(0);
-                        $(el.parent().parent().find('.amount')).html(item.totalAmount);
+                        $(el.closest('tr').find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
+                        $(el.closest('tr').find('.itemTaxRate')).val(totalItemTaxRate.toFixed(2));
+                        $(el.closest('tr').find('.taxes')).html(taxes);
+                        $(el.closest('tr').find('.tax')).val(tax);
+                        $(el.closest('tr').find('.unit')).html(item.unit);
+                        $(el.closest('tr').find('.discount')).val(0);
+                        $(el.closest('tr').find('.amount')).html(item.totalAmount);
 
                         var inputs = $(".amount");
                         var subTotal = 0;
@@ -646,7 +646,7 @@
                         for (var j = 0; j < itemTaxPriceInput.length; j++) {
                             totalItemTaxPrice += parseFloat(itemTaxPriceInput[j].value);
                             if (item.product != null) {
-                                $(el.parent().parent().find('.amount')).html(parseFloat(item.totalAmount) +
+                                $(el.closest('tr').find('.amount')).html(parseFloat(item.totalAmount) +
                                     parseFloat(itemTaxPriceInput[j].value));
                             }
                         }
@@ -689,9 +689,9 @@
             $(document).on('change', '.item', function() {
                 var iteams_id = $(this).val();
                 var el = $(this);
-                $(el.parent().parent().find('.price')).val(0);
-                $(el.parent().parent().find('.amount')).html(0);
-                $(el.parent().parent().find('.taxes')).val(0);
+                $(el.closest('tr').find('.price')).val(0);
+                $(el.closest('tr').find('.amount')).html(0);
+                $(el.closest('tr').find('.taxes')).val(0);
                 var proposal_type = $("#proposal_type").val();
                 if (proposal_type == 'project') {
                     $("#tax_project").change();
@@ -1370,4 +1370,152 @@
                 ).trigger('change');
         </script>
     @endif
+    <script>
+        function ProductType(data, id = null, type = null) {
+            var product_type = data.val();
+            var selector = data;
+            var itemSelect = selector.closest('tr').find('.product_id.item').attr('name');
+            
+            var productItem = $('.product_id');
+            var values = [];
+            
+            for (var j = 0; j < productItem.length; j++) {
+                var val = productItem[j].value.trim();
+                if (val !== '') {
+                    values.push(val);
+                }
+            }
+            var productItems = values.join(',');
+            var account_type = $('#account_type').val();
+            
+            console.log('ProductType: triggering for', product_type);
+
+            $.ajax({
+                url: '{{ route('get.item') }}',
+                type: 'POST',
+                data: {
+                    "product_type": product_type,
+                    "productItems": productItems,
+                    "type": type,
+                    "_token": "{{ csrf_token() }}",
+                },
+                beforeSend: function() {
+                    $(".loader-wrapper").removeClass('d-none');
+                },
+                success: function(data) {
+                    var product_select = '';
+                    if(account_type == 'SalesAgent'){
+                        product_select = `<div class="input-group">
+                                                <select class="form-control product_id item" name="${itemSelect}"
+                                                    placeholder="Select Item" data-url="{{ route('invoice.product') }}" required = 'required' disabled>
+                                                </select>
+                                                <button class="btn btn-primary quick-add-service-btn" type="button" data-title="{{ __('Create New Service') }}" data-url="{{ route('product-service.quick.create') }}" data-size="lg" data-ajax-popup="true" >
+                                                    <i class="ti ti-plus"></i>
+                                                </button>
+                                              </div>`;
+                    }
+                    else {
+                        product_select = `<div class="input-group">
+                                                <select class="form-control product_id item js-searchBox" name="${itemSelect}"
+                                                    placeholder="Select Item" data-url="{{ route('invoice.product') }}" required = 'required'>
+                                                </select>
+                                                <button class="btn btn-primary quick-add-service-btn" type="button" data-title="{{ __('Create New Service') }}" data-url="{{ route('product-service.quick.create') }}" data-size="lg" data-ajax-popup="true" >
+                                                    <i class="ti ti-plus"></i>
+                                                </button>
+                                              </div>`;
+                    }
+                    
+                    selector.closest('tr').find('.product_id').empty();
+                    selector.closest('tr').find('.product_div').html(product_select);
+
+                    selector.closest('tr').find('.product_id').append(
+                        '<option value="0"> {{ __('Select Item') }} </option>');
+                    $.each(data, function(key, value) {
+                        var selected = (key == id) ? 'selected' : '';
+                        selector.closest('tr').find('.product_id').append('<option value="' + key +
+                            '" ' + selected + '>' + value + '</option>');
+                    });
+
+                    if (type == 'edit') {
+                        if (typeof changeItem === 'function') {
+                            changeItem(selector.closest('tr').find('.product_id'));
+                        }
+                    } else {
+                        if (typeof items === 'function') {
+                            items(selector.closest('tr').find('.product_id'));
+                        }
+                    }
+
+                    if (window.JsSearchBox) {
+                        JsSearchBox();
+                    }
+                    $(".loader-wrapper").addClass('d-none');
+                }
+            });
+        }
+
+        $(document).on('click', '#submit-quick-add-service', function(e) {
+            e.preventDefault();
+            console.log('Quick Add Service: Submit clicked');
+            var form = $(this).closest('form');
+
+            if (!form[0].checkValidity()) {
+                var invalidFields = form.find(':invalid');
+                if (invalidFields.length > 0) {
+                    var firstInvalid = $(invalidFields[0]);
+                    var label = $("label[for='" + firstInvalid.attr('id') + "']").text() || 
+                                firstInvalid.closest('.form-group').find('label').text() || 
+                                firstInvalid.attr('placeholder') || 
+                                firstInvalid.attr('name');
+                    
+                    toastrs('Error', 'Please fill in the required field: ' + label, 'error');
+                }
+                form[0].reportValidity();
+                return;
+            }
+
+            var url = form.attr('action');
+            var formData = new FormData(form[0]);
+            var targetSelect = window.activeQuickAddSelect;
+
+            console.log('Quick Add Service: Sending AJAX to', url);
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    console.log('Quick Add Service: Response received', response);
+                    if (response.status == 'success') {
+                        toastrs('Success', response.msg, 'success');
+                        $('#commonModal').modal('hide');
+
+                        $('.product_id.item').each(function() {
+                            var select = $(this);
+                            select.append('<option value="' + response.data.id + '">' + response.data.name + '</option>');
+                        });
+
+                        if (targetSelect && targetSelect.length) {
+                            targetSelect.val(response.data.id).trigger('change');
+                        }
+                    } else {
+                        toastrs('Error', response.msg, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Quick Add Service: AJAX Error', xhr);
+                    var error = xhr.responseJSON ? xhr.responseJSON.msg : 'Something went wrong';
+                    toastrs('Error', error, 'error');
+                }
+            });
+        });
+
+        $(document).on('click', '.quick-add-service-btn', function() {
+            window.activeQuickAddSelect = $(this).closest('.input-group').find('select.item');
+            console.log('Quick Add Service: Target select stored', window.activeQuickAddSelect);
+        });
+    </script>
 @endpush
+

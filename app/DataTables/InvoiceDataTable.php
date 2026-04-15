@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\Invoice;
+use App\Models\InvoiceProduct;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,67 +26,57 @@ class InvoiceDataTable extends DataTable
     {
         $dataTable = (new EloquentDataTable($query))
             ->addIndexColumn()
-            ->editColumn('invoice_id',function(Invoice $invoice){
-                if (\Laratrust::hasPermission('invoice show'))
-                {
+            ->editColumn('invoice_id', function (Invoice $invoice) {
+                if (\Laratrust::hasPermission('invoice show')) {
                     $url = route('invoice.show', \Crypt::encrypt($invoice->id));
-                    return '<a href="'.$url.'" class="btn btn-outline-primary">'. Invoice::invoiceNumberFormat($invoice->invoice_id) .'</a>';
-                }
-                else{
-                    return ' <a href="#" class="btn btn-outline-primary">'. Invoice::invoiceNumberFormat($invoice->invoice_id) .'</a>';
+                    return '<a href="' . $url . '" class="btn btn-outline-primary">' . Invoice::invoiceNumberFormat($invoice->invoice_id) . '</a>';
+                } else {
+                    return ' <a href="#" class="btn btn-outline-primary">' . Invoice::invoiceNumberFormat($invoice->invoice_id) . '</a>';
                 }
             })
             ->editColumn('account_type', function (Invoice $invoice) {
-                return $invoice->account_type == 'Taskly' ? 'Project': preg_replace('/([a-z])([A-Z])/', '$1 $2', $invoice->account_type);
+                return $invoice->account_type == 'Taskly' ? 'Project' : preg_replace('/([a-z])([A-Z])/', '$1 $2', $invoice->account_type);
             })
             ->editColumn('issue_date', function (Invoice $invoice) {
                 return company_date_formate($invoice->issue_date);
             })
             ->editColumn('due_date', function (Invoice $invoice) {
-                if ($invoice->due_date < date('Y-m-d')){
-                    return '<p class="text-danger mb-0">'. company_date_formate($invoice->due_date) .'</p>';
-                }
-                else{
+                if ($invoice->due_date < date('Y-m-d')) {
+                    return '<p class="text-danger mb-0">' . company_date_formate($invoice->due_date) . '</p>';
+                } else {
                     return company_date_formate($invoice->due_date);
                 }
             })
             ->addColumn('total_amount', function (Invoice $invoice) {
-                    return currency_format_with_sym($invoice->getTotal());
+                return currency_format_with_sym($invoice->getTotal());
             })
             ->addColumn('due_amount', function (Invoice $invoice) {
                 return currency_format_with_sym($invoice->getDue());
             })
+            ->addColumn('item_names', function (Invoice $invoice) {
+                return $this->getInvoiceItemNames($invoice);
+            })
             ->editColumn('status', function (Invoice $invoice) {
-                if ($invoice->status == 0)
-                {
+                if ($invoice->status == 0) {
                     $class = 'bg-info';
-                }
-                elseif($invoice->status == 1)
-                {
+                } elseif ($invoice->status == 1) {
                     $class = 'bg-primary';
-                }
-                elseif($invoice->status == 2)
-                {
+                } elseif ($invoice->status == 2) {
                     $class = 'bg-secondary';
-                }
-                elseif($invoice->status == 3)
-                {
+                } elseif ($invoice->status == 3) {
                     $class = 'bg-warning';
-                }
-                elseif($invoice->status == 4)
-                {
+                } elseif ($invoice->status == 4) {
                     $class = 'bg-success';
-                }else
-                {
+                } else {
                     $class = 'bg-dark';
                 }
-                return '<span class="badge fix_badges '.$class.' p-2 px-3">'. Invoice::$statues[$invoice->status] .'</span>';
+                return '<span class="badge fix_badges ' . $class . ' p-2 px-3">' . Invoice::$statues[$invoice->status] . '</span>';
 
             })
             ->addColumn('action', function (Invoice $invoice) {
                 return view('invoice.action', compact('invoice'));
             })
-            ->rawColumns(['invoice_id','issue_date','due_date','total_amount','due_amount','status','action']);
+            ->rawColumns(['invoice_id', 'issue_date', 'due_date', 'total_amount', 'due_amount', 'status', 'action']);
 
         return $dataTable;
     }
@@ -93,7 +84,7 @@ class InvoiceDataTable extends DataTable
     /**
      * Get the query source of dataTable.
      */
-    public function query(Invoice $model,Request $request): QueryBuilder
+    public function query(Invoice $model, Request $request): QueryBuilder
     {
         if (Auth::user()->type != 'company') {
             $query = $model->join('users', 'invoices.user_id', '=', 'users.id')
@@ -126,7 +117,7 @@ class InvoiceDataTable extends DataTable
             $query->whereIn('account_type', ActivatedModule());
         }
 
-        return $query->with('customers');
+        return $query->with('customers', 'items');
 
     }
 
@@ -136,11 +127,11 @@ class InvoiceDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         $dataTable = $this->builder()
-                    ->setTableId('invoice-table')
-                    ->orderBy(0)
-                    ->columns($this->getColumns())
-                    ->ajax([
-                        'data' => 'function(d) {
+            ->setTableId('invoice-table')
+            ->orderBy(0)
+            ->columns($this->getColumns())
+            ->ajax([
+                'data' => 'function(d) {
                             var issue_date = $("input[name=issue_date]").val();
                             d.issue_date = issue_date
 
@@ -153,18 +144,18 @@ class InvoiceDataTable extends DataTable
                             var account_type = $("select[name=account_type]").val();
                             d.account_type = account_type
                         }',
-                    ])
-                    ->language([
-                        "paginate" => [
-                            "next" => '<i class="ti ti-chevron-right"></i>',
-                            "previous" => '<i class="ti ti-chevron-left"></i>'
-                        ],
-                        'lengthMenu' => "_MENU_" . __('Entries Per Page'),
-                        "searchPlaceholder" => __('Search...'),
-                        "search" => "",
-                        "info" => __('Showing _START_ to _END_ of _TOTAL_ entries')
-                    ])
-                    ->initComplete('function() {
+            ])
+            ->language([
+                "paginate" => [
+                    "next" => '<i class="ti ti-chevron-right"></i>',
+                    "previous" => '<i class="ti ti-chevron-left"></i>'
+                ],
+                'lengthMenu' => "_MENU_" . __('Entries Per Page'),
+                "searchPlaceholder" => __('Search...'),
+                "search" => "",
+                "info" => __('Showing _START_ to _END_ of _TOTAL_ entries')
+            ])
+            ->initComplete('function() {
                                         var table = this;
 
                                          $("body").on("click", "#applyfilter", function() {
@@ -191,51 +182,51 @@ class InvoiceDataTable extends DataTable
                                         var select = $(table.api().table().container()).find(".dataTables_length select").removeClass(\'custom-select custom-select-sm form-control form-control-sm\').addClass(\'dataTable-selector\');
                                     }');
 
-                $exportButtonConfig = [
-                    'extend' => 'collection',
-                    'className' => 'btn btn-light-secondary dropdown-toggle',
-                    'text' => '<i class="ti ti-download me-2" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Export"></i>',
-                    'buttons' => [
-                        [
-                            'extend' => 'print',
-                            'text' => '<i class="fas fa-print me-2"></i> ' . __('Print'),
-                            'className' => 'btn btn-light text-primary dropdown-item',
-                            'exportOptions' => ['columns' => [0, 1, 3]],
-                        ],
-                        [
-                            'extend' => 'csv',
-                            'text' => '<i class="fas fa-file-csv me-2"></i> ' . __('CSV'),
-                            'className' => 'btn btn-light text-primary dropdown-item',
-                            'exportOptions' => ['columns' => [0, 1, 3]],
-                        ],
-                        [
-                            'extend' => 'excel',
-                            'text' => '<i class="fas fa-file-excel me-2"></i> ' . __('Excel'),
-                            'className' => 'btn btn-light text-primary dropdown-item',
-                            'exportOptions' => ['columns' => [0, 1, 3]],
-                        ],
-                    ],
-                ];
+        $exportButtonConfig = [
+            'extend' => 'collection',
+            'className' => 'btn btn-light-secondary dropdown-toggle',
+            'text' => '<i class="ti ti-download me-2" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Export"></i>',
+            'buttons' => [
+                [
+                    'extend' => 'print',
+                    'text' => '<i class="fas fa-print me-2"></i> ' . __('Print'),
+                    'className' => 'btn btn-light text-primary dropdown-item',
+                    'exportOptions' => ['columns' => [0, 1, 3]],
+                ],
+                [
+                    'extend' => 'csv',
+                    'text' => '<i class="fas fa-file-csv me-2"></i> ' . __('CSV'),
+                    'className' => 'btn btn-light text-primary dropdown-item',
+                    'exportOptions' => ['columns' => [0, 1, 3]],
+                ],
+                [
+                    'extend' => 'excel',
+                    'text' => '<i class="fas fa-file-excel me-2"></i> ' . __('Excel'),
+                    'className' => 'btn btn-light text-primary dropdown-item',
+                    'exportOptions' => ['columns' => [0, 1, 3]],
+                ],
+            ],
+        ];
 
-                $buttonsConfig = array_merge([
-                    $exportButtonConfig,
-                    [
-                        'extend' => 'reset',
-                        'className' => 'btn btn-light-danger',
-                    ],
-                    [
-                        'extend' => 'reload',
-                        'className' => 'btn btn-light-warning',
-                    ],
-                ]);
+        $buttonsConfig = array_merge([
+            $exportButtonConfig,
+            [
+                'extend' => 'reset',
+                'className' => 'btn btn-light-danger',
+            ],
+            [
+                'extend' => 'reload',
+                'className' => 'btn btn-light-warning',
+            ],
+        ]);
 
-                $dataTable->parameters([
-                    "dom" =>  "
+        $dataTable->parameters([
+            "dom" => "
                                     <'dataTable-top'<'dataTable-dropdown page-dropdown'l><'dataTable-botton table-btn dataTable-search tb-search  d-flex justify-content-end gap-2'Bf>>
                                     <'dataTable-container'<'col-sm-12'tr>>
                                     <'dataTable-bottom row'<'col-5'i><'col-7'p>>",
-                    'buttons' => $buttonsConfig,
-                    "drawCallback" => 'function( settings ) {
+            'buttons' => $buttonsConfig,
+            "drawCallback" => 'function( settings ) {
                                             var tooltipTriggerList = [].slice.call(
                                                 document.querySelectorAll("[data-bs-toggle=tooltip]")
                                               );
@@ -253,21 +244,21 @@ class InvoiceDataTable extends DataTable
                                                 return new bootstrap.Toast(toastEl);
                                               });
                                         }'
-                ]);
+        ]);
 
-                $dataTable->language([
-                    'buttons' => [
-                        'create' => __('Create'),
-                        'export' => __('Export'),
-                        'print' => __('Print'),
-                        'reset' => __('Reset'),
-                        'reload' => __('Reload'),
-                        'excel' => __('Excel'),
-                        'csv' => __('CSV'),
-                    ]
-                ]);
+        $dataTable->language([
+            'buttons' => [
+                'create' => __('Create'),
+                'export' => __('Export'),
+                'print' => __('Print'),
+                'reset' => __('Reset'),
+                'reload' => __('Reload'),
+                'excel' => __('Excel'),
+                'csv' => __('CSV'),
+            ]
+        ]);
 
-                return $dataTable;
+        return $dataTable;
     }
     /**
      * Get the dataTable columns definition.
@@ -278,6 +269,7 @@ class InvoiceDataTable extends DataTable
             Column::make('id')->searchable(false)->visible(false)->exportable(false)->printable(false),
             Column::make('No')->title(__('No'))->data('DT_RowIndex')->name('DT_RowIndex')->searchable(false)->orderable(false),
             Column::make('invoice_id')->title(__('Invoice')),
+            Column::computed('item_names')->title(__('Items')),
             Column::make('account_type')->title(__('Account Type')),
             Column::make('issue_date')->title(__('Issue Date')),
             Column::make('due_date')->title(__('Due Date')),
@@ -298,5 +290,32 @@ class InvoiceDataTable extends DataTable
     protected function filename(): string
     {
         return 'Invoice_' . date('YmdHis');
+    }
+
+    private function getInvoiceItemNames(Invoice $invoice): string
+    {
+        $names = $invoice->items->map(function (InvoiceProduct $item) use ($invoice) {
+            if (!empty($item->product_name)) {
+                return trim($item->product_name);
+            }
+
+            $product = $item->product();
+
+            if (!empty($product->name)) {
+                return trim($product->name);
+            }
+
+            if (!empty($product->title)) {
+                return trim($product->title);
+            }
+
+            if ($invoice->invoice_module === 'Fleet' && !empty($product->distance)) {
+                return (string) $product->distance;
+            }
+
+            return null;
+        })->filter()->unique()->values();
+
+        return $names->isNotEmpty() ? $names->implode(', ') : '-';
     }
 }

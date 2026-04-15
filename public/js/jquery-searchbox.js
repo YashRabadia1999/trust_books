@@ -40,7 +40,14 @@
 			self.after($('<ul class="searchBoxElement"></ul>').hide());
 
 			// ダミーリストの表示幅をセレクトボックスにあわせる
-			var refineTextWidth = (settings.elementWidth) ? settings.elementWidth : self.width();
+			var refineTextWidth = (settings.elementWidth) ? settings.elementWidth : self.outerWidth();
+			var quickAddButton = parent.find('.quick-add-service-btn');
+			if (!settings.elementWidth && quickAddButton.length > 0) {
+				var availableWidth = parent.width() - quickAddButton.outerWidth(true);
+				if (availableWidth > 0) {
+					refineTextWidth = availableWidth;
+				}
+			}
 			refineText.css('width', refineTextWidth);
 			parent.find('.searchBoxElement').css('width', refineTextWidth);
 

@@ -23,6 +23,9 @@ use Illuminate\Support\Facades\DB;
 use Workdo\ProductService\Events\CreateProduct;
 use Workdo\ProductService\Events\DestroyProduct;
 use Workdo\ProductService\Events\UpdateProduct;
+use Workdo\Account\Entities\ChartOfAccount;
+use Workdo\Account\Entities\ChartOfAccountSubType;
+use Workdo\Account\Entities\ChartOfAccountType;
 use Workdo\CMMS\Entities\Workorder;
 use Workdo\CMMS\Entities\Component;
 use Workdo\CMMS\Entities\Pms;
@@ -278,6 +281,186 @@ class ProductServiceController extends Controller
             return response()->json($response);
         }
     }
+    
+    public function quickCreate(Request $request)
+    {
+        if (Auth::user()->isAbleTo('product&service create')) {
+            $category = Category::where('created_by', '=', creatorId())->where('workspace_id', '=', getActiveWorkSpace())->where('type', '=', 0)->get()->pluck('name', 'id');
+            $unit = Unit::where('created_by', '=', creatorId())->where('workspace_id', '=', getActiveWorkSpace())->get()->pluck('name', 'id');
+            $tax = Tax::where('created_by', '=', creatorId())->where('workspace_id', '=', getActiveWorkSpace())->get()->pluck('name', 'id');
+
+            $incomeChartAccounts = [];
+            $expenseChartAccounts = [];
+
+            if (module_is_active('Account')) {
+                $incomeTypes = ChartOfAccountType::where('created_by', '=', creatorId())
+                    ->where('workspace', getActiveWorkSpace())
+                    ->whereIn('name', ['Assets', 'Liabilities', 'Income'])
+                    ->get();
+
+                foreach ($incomeTypes as $type) {
+                    $accountTypes = ChartOfAccountSubType::where('type', $type->id)
+                        ->where('created_by', '=', creatorId())
+                        ->whereNotIn('name', ['Accounts Receivable', 'Accounts Payable'])
+                        ->get();
+
+                    $temp = [];
+                    foreach ($accountTypes as $accountType) {
+                        $chartOfAccounts = ChartOfAccount::where('sub_type', $accountType->id)->where('parent', '=', 0)
+                            ->where('created_by', '=', creatorId())
+                            ->get();
+                        $incomeSubAccounts = ChartOfAccount::where('sub_type', $accountType->id)->where('parent', '!=', 0)
+                            ->where('created_by', '=', creatorId())
+                            ->get();
+
+                        $tempData = [
+                            'account_name' => $accountType->name,
+                            'chart_of_accounts' => [],
+                            'subAccounts' => [],
+                        ];
+                        foreach ($chartOfAccounts as $chartOfAccount) {
+                            $tempData['chart_of_accounts'][] = [
+                                'id' => $chartOfAccount->id,
+                                'account_number' => $chartOfAccount->account_number,
+                                'account_name' => $chartOfAccount->name,
+                            ];
+                        }
+                        foreach ($incomeSubAccounts as $chartOfAccount) {
+                            $tempData['subAccounts'][] = [
+                                'id' => $chartOfAccount->id,
+                                'account_number' => $chartOfAccount->account_number,
+                                'account_name' => $chartOfAccount->name,
+                                'parent' => $chartOfAccount->parent
+                            ];
+                        }
+                        $temp[$accountType->id] = $tempData;
+                    }
+                    $incomeChartAccounts[$type->name] = $temp;
+                }
+
+                $expenseTypes = ChartOfAccountType::where('created_by', '=', creatorId())
+                    ->where('workspace', getActiveWorkSpace())
+                    ->whereIn('name', ['Assets', 'Liabilities', 'Expenses', 'Costs of Goods Sold'])
+                    ->get();
+
+                foreach ($expenseTypes as $type) {
+                    $accountTypes = ChartOfAccountSubType::where('type', $type->id)
+                        ->where('created_by', '=', creatorId())
+                        ->whereNotIn('name', ['Accounts Receivable', 'Accounts Payable'])
+                        ->get();
+
+                    $temp = [];
+                    foreach ($accountTypes as $accountType) {
+                        $chartOfAccounts = ChartOfAccount::where('sub_type', $accountType->id)->where('parent', '=', 0)
+                            ->where('created_by', '=', creatorId())
+                            ->get();
+                        $expenseSubAccounts = ChartOfAccount::where('sub_type', $accountType->id)->where('parent', '!=', 0)
+                            ->where('created_by', '=', creatorId())
+                            ->get();
+
+                        $tempData = [
+                            'account_name' => $accountType->name,
+                            'chart_of_accounts' => [],
+                            'subAccounts' => [],
+                        ];
+                        foreach ($chartOfAccounts as $chartOfAccount) {
+                            $tempData['chart_of_accounts'][] = [
+                                'id' => $chartOfAccount->id,
+                                'account_number' => $chartOfAccount->account_number,
+                                'account_name' => $chartOfAccount->name,
+                            ];
+                        }
+                        foreach ($expenseSubAccounts as $chartOfAccount) {
+                            $tempData['subAccounts'][] = [
+                                'id' => $chartOfAccount->id,
+                                'account_number' => $chartOfAccount->account_number,
+                                'account_name' => $chartOfAccount->name,
+                                'parent' => $chartOfAccount->parent
+                            ];
+                        }
+                        $temp[$accountType->id] = $tempData;
+                    }
+                    $expenseChartAccounts[$type->name] = $temp;
+                }
+            }
+
+            return view('product-service::quick_create', compact('category', 'unit', 'tax', 'incomeChartAccounts', 'expenseChartAccounts'));
+        } else {
+            return response()->json(['error' => __('Permission denied.')], 401);
+        }
+    }
+
+    public function quickStore(Request $request)
+    {
+        \Log::info('QuickStore: Reached function entry', $request->all());
+        if (Auth::user()->isAbleTo('product&service create')) {
+            $rules = [
+                'name' => 'required',
+                'sku' => 'required',
+                'sale_price' => 'required|numeric',
+                'purchase_price' => 'required|numeric',
+                'category_id' => 'required',
+                'type' => 'required',
+            ];
+
+            $validator = \Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                \Log::error('QuickStore: Validation failed', ['errors' => $validator->errors()->toArray()]);
+                return response()->json(['status' => 'error', 'msg' => $validator->errors()->first()], 400);
+            }
+
+            try {
+                $productService                 = new ProductService();
+                $productService->name           = $request->name;
+                $productService->description    = $request->description;
+                $productService->sku            = $request->sku;
+                $productService->sale_price     = $request->sale_price;
+                $productService->purchase_price = $request->purchase_price;
+                $productService->tax_id         = !empty($request->tax_id) ? implode(',', $request->tax_id) : '';
+                $productService->unit_id        = $request->unit_id;
+                $productService->quantity       = 0;
+                $productService->type           = $request->type;
+                $productService->category_id    = $request->category_id;
+                $productService->workspace_id   = getActiveWorkSpace();
+                $productService->created_by     = creatorId();
+
+                if ($request->hasFile('image')) {
+                    $name = time() . "_" . $request->image->getClientOriginalName();
+                    $path = upload_file($request, 'image', $name, 'products');
+                    if ($path['flag'] == 1) {
+                        $productService->image = $path['url'];
+                    }
+                }
+
+                $productService->save();
+                \Log::info('QuickStore: Successfully saved product', ['id' => $productService->id]);
+
+                // Trigger event. Account module listener will save chartaccount_ids if provided in $request.
+                event(new CreateProduct($request, $productService));
+
+                return response()->json([
+                    'status' => 'success',
+                    'msg' => __('The service has been created successfully.'),
+                    'data' => [
+                        'id' => $productService->id,
+                        'name' => $productService->name,
+                    ]
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('QuickStore: Exception occurred', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                return response()->json([
+                    'status' => 'error',
+                    'msg' => __('Something went wrong: ') . $e->getMessage()
+                ], 500);
+            }
+        } else {
+            return response()->json(['status' => 'error', 'msg' => __('Permission denied.')], 401);
+        }
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -294,7 +477,6 @@ class ProductServiceController extends Controller
                 'sale_price' => 'required|numeric',
                 'purchase_price' => 'required|numeric',
                 'category_id' => 'required',
-                'unit_id' => 'required',
                 'type' => 'required',
                 'tax_id' => 'required',
             ];
@@ -496,7 +678,6 @@ class ProductServiceController extends Controller
                 'sale_price' => 'required|numeric',
                 'purchase_price' => 'required|numeric',
                 'category_id' => 'required',
-                'unit_id' => 'required',
                 'type' => 'required',
                 'tax_id' => 'required',
 

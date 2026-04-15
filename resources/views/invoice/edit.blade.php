@@ -8,7 +8,7 @@
 
 @section('content')
     <div class="row">
-        {{ Form::model($invoice, ['route' => ['invoice.update', $invoice->id], 'method' => 'PUT', 'class' => 'w-100', 'enctype' => 'multipart/form-data','class' => 'needs-validation', 'novalidate']) }}
+        {{ Form::model($invoice, ['route' => ['invoice.update', $invoice->id], 'method' => 'PUT', 'class' => 'w-100', 'enctype' => 'multipart/form-data', 'class' => 'needs-validation', 'novalidate']) }}
         @if ($invoice->invoice_module == 'account')
             <input type="hidden" name="invoice_type" id="invoice_type" value="product">
         @elseif ($invoice->invoice_module == 'taskly')
@@ -53,7 +53,8 @@
                         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                             <div class="row" id="customer-box">
                                 <div class="form-group col-md-6" id="account-box">
-                                    <label class="require form-label">{{ __('Account Type') }}</label><x-required></x-required>
+                                    <label
+                                        class="require form-label">{{ __('Account Type') }}</label><x-required></x-required>
                                     <select
                                         class="form-control {{ !empty($errors->first('account_type')) ? 'is-invalid' : '' }}"
                                         name="account_type" required="" id="account_type" disabled>
@@ -86,7 +87,8 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="require form-label">{{ __('Billing Type') }}</label><x-required></x-required>
+                                        <label
+                                            class="require form-label">{{ __('Billing Type') }}</label><x-required></x-required>
                                         <select
                                             class="form-control {{ !empty($errors->first('Billing Type')) ? 'is-invalid' : '' }}"
                                             name="invoice_type_radio" required="" id="billing_type">
@@ -166,7 +168,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6 tax_project_div {{ module_is_active('Account') || module_is_active('CMMS') ? 'd-none' : '' }}">
+                                <div
+                                    class="col-md-6 tax_project_div {{ module_is_active('Account') || module_is_active('CMMS') ? 'd-none' : '' }}">
                                     <div class="form-group">
                                         {{ Form::label('tax_project', __('Tax'), ['class' => 'form-label']) }}
                                         {{ Form::select('tax_project[]', $taxs, !empty($invoice->items->first()->tax) ? explode(',', $invoice->items->first()->tax) : null, ['class' => 'form-control get_tax multi-select choices', 'multiple' => 'multiple', 'id' => 'tax_project', 'placeholder' => 'Select Tax']) }}
@@ -174,20 +177,26 @@
                                 </div>
                                 @if (module_is_active('Account'))
                                     <div class="form-group col-md-6 income_account_div d-none">
-                                        {{ Form::label('sale_chartaccount_id', __('Income Account'),['class'=>'form-label']) }}<x-required></x-required>
+                                        {{ Form::label('sale_chartaccount_id', __('Income Account'), ['class' => 'form-label']) }}<x-required></x-required>
                                         <select name="sale_chartaccount_id" class="form-control account_id">
-                                            <option value="">{{ __('Select Chart of Account')}}</option>
+                                            <option value="">{{ __('Select Chart of Account') }}</option>
                                             @foreach ($incomeChartAccounts as $typeName => $subtypes)
                                                 <optgroup label="{{ $typeName }}">
                                                     @foreach ($subtypes as $subtypeId => $subtypeData)
-                                                        <option disabled style="color: #000; font-weight: bold;">{{ $subtypeData['account_name'] }}</option>
+                                                        <option disabled style="color: #000; font-weight: bold;">
+                                                            {{ $subtypeData['account_name'] }}</option>
                                                         @foreach ($subtypeData['chart_of_accounts'] as $chartOfAccount)
-                                                            <option value="{{ $chartOfAccount['id'] }}" {{ $chartOfAccount['id'] == $invoice->account_id ? 'selected' : ''}}>
+                                                            <option value="{{ $chartOfAccount['id'] }}"
+                                                                {{ $chartOfAccount['id'] == $invoice->account_id ? 'selected' : '' }}>
                                                                 &nbsp;&nbsp;&nbsp;{{ $chartOfAccount['account_name'] }}
                                                             </option>
                                                             @foreach ($subtypeData['subAccounts'] as $subAccount)
                                                                 @if ($chartOfAccount['id'] == $subAccount['parent'])
-                                                                <option value="{{ $subAccount['id'] }}" class="ms-5" {{ $subAccount['id'] == $invoice->account_id ? 'selected' : ''}}> &nbsp; &nbsp;&nbsp;&nbsp; {{' - '. $subAccount['account_name'] }}</option>
+                                                                    <option value="{{ $subAccount['id'] }}"
+                                                                        class="ms-5"
+                                                                        {{ $subAccount['id'] == $invoice->account_id ? 'selected' : '' }}>
+                                                                        &nbsp; &nbsp;&nbsp;&nbsp;
+                                                                        {{ ' - ' . $subAccount['account_name'] }}</option>
                                                                 @endif
                                                             @endforeach
                                                         @endforeach
@@ -476,8 +485,7 @@
                 });
                 var invoice_type = '{{ $invoice->invoice_module }}';
 
-                if(id)
-                {
+                if (id) {
                     $.ajax({
                         url: '{{ route('invoice.product.destroy') }}',
                         type: 'POST',
@@ -515,9 +523,9 @@
             }
             var student = $('#account_type').val();
 
-                $('#customer_detail').removeClass('d-none');
-                $('#customer_detail').addClass('d-block');
-                $('#customer-box').addClass('d-none');
+            $('#customer_detail').removeClass('d-none');
+            $('#customer_detail').addClass('d-block');
+            $('#customer-box').addClass('d-none');
 
             var id = $(this).val();
             var url = $(this).data('url');
@@ -548,7 +556,7 @@
                         $.each(data.courseorder, function(key, value) {
                             var course = '{{ $invoice->category_id }}';
                             $('#course_order').append('<option value="' + key + '" ' + (key ==
-                            course ? 'selected' : '') + '>' + value + '</option>');
+                                course ? 'selected' : '') + '>' + value + '</option>');
                         });
                     } else if ($('#invoice_type').val() == 'restaurantmenu') {
                         $('#customer_detail').html(data.html);
@@ -558,8 +566,10 @@
                             '<option value="">{{ __('Select Restaurant Order') }}</option>');
                         $.each(data.restaurantorder, function(key, value) {
                             var restaurant = '{{ $invoice->category_id }}';
-                            $('#restaurant_order').append('<option value="' + key + '" ' + (key ==
-                            restaurant ? 'selected' : '') + '>' + value + '</option>');
+                            $('#restaurant_order').append('<option value="' + key + '" ' + (
+                                    key ==
+                                    restaurant ? 'selected' : '') + '>' + value +
+                                '</option>');
                         });
                     } else {
                         if (data != '') {
@@ -589,7 +599,7 @@
         $(document).on('keyup', '.quantity', function() {
             var quntityTotalTaxPrice = 0;
 
-            var el = $(this).parent().parent().parent().parent();
+            var el = $(this).closest('tr');
 
             var quantity = $(this).val();
             var price = $(el.find('.price')).val();
@@ -646,7 +656,7 @@
         })
 
         $(document).on('keyup change', '.price', function() {
-            var el = $(this).parent().parent().parent().parent();
+            var el = $(this).closest('tr');
             var price = $(this).val();
             var quantity = $(el.find('.quantity')).val();
             if (quantity.length <= 0) {
@@ -709,7 +719,7 @@
 
         $(document).on('keyup change', '.discount', function() {
             if ($('#invoice_type').val() != 'case') {
-                var el = $(this).parent().parent().parent();
+                var el = $(this).closest('tr');
                 var discount = $(this).val();
                 if (discount.length <= 0) {
                     discount = 0;
@@ -817,15 +827,15 @@
                         cache: false,
                         success: function(data) {
                             var item = JSON.parse(data);
-                            $(el.parent().parent().find('.quantity')).val(1);
+                            $(el.closest('tr').find('.quantity')).val(1);
                             if (item.product != null) {
-                                $(el.parent().parent().find('.price')).val(item.product.sale_price);
-                                $(el.parent().parent().parent().find('.pro_description')).val(item.product
+                                $(el.closest('tr').find('.price')).val(item.product.sale_price);
+                                $(el.closest('tr').find('.pro_description')).val(item.product
                                     .description);
 
                             } else {
-                                $(el.parent().parent().find('.price')).val(0);
-                                $(el.parent().parent().parent().find('.pro_description')).val('');
+                                $(el.closest('tr').find('.price')).val(0);
+                                $(el.closest('tr').find('.pro_description')).val('');
 
                             }
                             var taxes = '';
@@ -849,13 +859,13 @@
                                 var itemTaxPrice = parseFloat((totalItemTaxRate / 100) * (item.product
                                     .sale_price * 1));
                             }
-                            $(el.parent().parent().find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
-                            $(el.parent().parent().find('.itemTaxRate')).val(totalItemTaxRate.toFixed(2));
-                            $(el.parent().parent().find('.taxes')).html(taxes);
-                            $(el.parent().parent().find('.tax')).val(tax);
-                            $(el.parent().parent().find('.unit')).html(item.unit);
-                            $(el.parent().parent().find('.discount')).val(0);
-                            $(el.parent().parent().find('.amount')).html(item.totalAmount);
+                            $(el.closest('tr').find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
+                            $(el.closest('tr').find('.itemTaxRate')).val(totalItemTaxRate.toFixed(2));
+                            $(el.closest('tr').find('.taxes')).html(taxes);
+                            $(el.closest('tr').find('.tax')).val(tax);
+                            $(el.closest('tr').find('.unit')).html(item.unit);
+                            $(el.closest('tr').find('.discount')).val(0);
+                            $(el.closest('tr').find('.amount')).html(item.totalAmount);
 
 
                             var inputs = $(".amount");
@@ -876,7 +886,7 @@
                             for (var j = 0; j < itemTaxPriceInput.length; j++) {
                                 totalItemTaxPrice += parseFloat(itemTaxPriceInput[j].value);
                                 if (item.product != null) {
-                                    $(el.parent().parent().find('.amount')).html(parseFloat(item.totalAmount) +
+                                    $(el.closest('tr').find('.amount')).html(parseFloat(item.totalAmount) +
                                         parseFloat(itemTaxPriceInput[j].value));
                                 }
                             }
@@ -924,9 +934,9 @@
             $(document).on('change', '.item', function() {
                 var iteams_id = $(this).val();
                 var el = $(this);
-                $(el.parent().parent().find('.price')).val(0);
-                $(el.parent().parent().find('.amount')).html(0);
-                $(el.parent().parent().find('.taxes')).val(0);
+                $(el.closest('tr').find('.price')).val(0);
+                $(el.closest('tr').find('.amount')).html(0);
+                $(el.closest('tr').find('.taxes')).val(0);
                 var invoice_type = $("#invoice_type").val();
                 // if (invoice_type == 'project') {
                 //     $("#tax_project").change();
@@ -1000,15 +1010,15 @@
                         cache: false,
                         success: function(data) {
                             var item = JSON.parse(data);
-                            $(el.parent().parent().find('.quantity')).val(1);
+                            $(el.closest('tr').find('.quantity')).val(1);
                             if (item.product != null) {
-                                $(el.parent().parent().find('.price')).val(item.product.sale_price);
-                                $(el.parent().parent().parent().find('.pro_description')).val(item.product
+                                $(el.closest('tr').find('.price')).val(item.product.sale_price);
+                                $(el.closest('tr').find('.pro_description')).val(item.product
                                     .description);
 
                             } else {
-                                $(el.parent().parent().find('.price')).val(0);
-                                $(el.parent().parent().parent().find('.pro_description')).val('');
+                                $(el.closest('tr').find('.price')).val(0);
+                                $(el.closest('tr').find('.pro_description')).val('');
 
                             }
 
@@ -1033,13 +1043,13 @@
                                 var itemTaxPrice = parseFloat((totalItemTaxRate / 100) * (item.product
                                     .sale_price * 1));
                             }
-                            $(el.parent().parent().find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
-                            $(el.parent().parent().find('.itemTaxRate')).val(totalItemTaxRate.toFixed(2));
-                            $(el.parent().parent().find('.taxes')).html(taxes);
-                            $(el.parent().parent().find('.tax')).val(tax);
-                            $(el.parent().parent().find('.unit')).html(item.unit);
-                            $(el.parent().parent().find('.discount')).val(0);
-                            $(el.parent().parent().find('.amount')).html(item.totalAmount);
+                            $(el.closest('tr').find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
+                            $(el.closest('tr').find('.itemTaxRate')).val(totalItemTaxRate.toFixed(2));
+                            $(el.closest('tr').find('.taxes')).html(taxes);
+                            $(el.closest('tr').find('.tax')).val(tax);
+                            $(el.closest('tr').find('.unit')).html(item.unit);
+                            $(el.closest('tr').find('.discount')).val(0);
+                            $(el.closest('tr').find('.amount')).html(item.totalAmount);
 
 
                             var inputs = $(".amount");
@@ -1059,7 +1069,7 @@
                             for (var j = 0; j < itemTaxPriceInput.length; j++) {
                                 totalItemTaxPrice += parseFloat(itemTaxPriceInput[j].value);
                                 if (item.product != null) {
-                                    $(el.parent().parent().find('.amount')).html(parseFloat(item.totalAmount) +
+                                    $(el.closest('tr').find('.amount')).html(parseFloat(item.totalAmount) +
                                         parseFloat(itemTaxPriceInput[j].value));
                                 }
                             }
@@ -1112,15 +1122,15 @@
                         cache: false,
                         success: function(data) {
                             var item = JSON.parse(data);
-                            $(el.parent().parent().find('.quantity')).val(1);
+                            $(el.closest('tr').find('.quantity')).val(1);
                             if (item.product != null) {
-                                $(el.parent().parent().find('.price')).val(item.product.sale_price);
-                                $(el.parent().parent().parent().find('.pro_description')).val(item.product
+                                $(el.closest('tr').find('.price')).val(item.product.sale_price);
+                                $(el.closest('tr').find('.pro_description')).val(item.product
                                     .description);
 
                             } else {
-                                $(el.parent().parent().find('.price')).val(0);
-                                $(el.parent().parent().parent().find('.pro_description')).val('');
+                                $(el.closest('tr').find('.price')).val(0);
+                                $(el.closest('tr').find('.pro_description')).val('');
 
                             }
 
@@ -1145,13 +1155,13 @@
                                 var itemTaxPrice = parseFloat((totalItemTaxRate / 100) * (item.product
                                     .sale_price * 1));
                             }
-                            $(el.parent().parent().find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
-                            $(el.parent().parent().find('.itemTaxRate')).val(totalItemTaxRate.toFixed(2));
-                            $(el.parent().parent().find('.taxes')).html(taxes);
-                            $(el.parent().parent().find('.tax')).val(tax);
-                            $(el.parent().parent().find('.unit')).html(item.unit);
-                            $(el.parent().parent().find('.discount')).val(0);
-                            $(el.parent().parent().find('.amount')).html(item.totalAmount);
+                            $(el.closest('tr').find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
+                            $(el.closest('tr').find('.itemTaxRate')).val(totalItemTaxRate.toFixed(2));
+                            $(el.closest('tr').find('.taxes')).html(taxes);
+                            $(el.closest('tr').find('.tax')).val(tax);
+                            $(el.closest('tr').find('.unit')).html(item.unit);
+                            $(el.closest('tr').find('.discount')).val(0);
+                            $(el.closest('tr').find('.amount')).html(item.totalAmount);
 
 
                             var inputs = $(".amount");
@@ -1171,7 +1181,7 @@
                             for (var j = 0; j < itemTaxPriceInput.length; j++) {
                                 totalItemTaxPrice += parseFloat(itemTaxPriceInput[j].value);
                                 if (item.product != null) {
-                                    $(el.parent().parent().find('.amount')).html(parseFloat(item.totalAmount) +
+                                    $(el.closest('tr').find('.amount')).html(parseFloat(item.totalAmount) +
                                         parseFloat(itemTaxPriceInput[j].value));
                                 }
                             }
@@ -1481,6 +1491,80 @@
         function SectionGet(type = 'product', project_id = "0", title = 'Project', course_order = '0') {
 
             var acction = $("#acction_type").val();
+            var editInvoiceItems = @json($invoice->items);
+
+            function hydrateEditItems(selectedType) {
+                if (acction !== 'edit' || !Array.isArray(editInvoiceItems) || editInvoiceItems.length === 0) {
+                    return;
+                }
+
+                var repeater = $('.section_div .repeater');
+                if (repeater.length === 0) {
+                    return;
+                }
+
+                var createBtn = repeater.find('[data-repeater-create]').first();
+                var rows = repeater.find('[data-repeater-item]');
+
+                while (rows.length < editInvoiceItems.length) {
+                    createBtn.trigger('click');
+                    rows = repeater.find('[data-repeater-item]');
+                }
+
+                for (var i = 0; i < editInvoiceItems.length; i++) {
+                    var rowData = editInvoiceItems[i] || {};
+                    var row = $(rows[i]);
+
+                    row.find('.id').val(rowData.id || '');
+                    row.find('.quantity').val(rowData.quantity || '');
+                    row.find('.price').val(rowData.price || '');
+                    row.find('.discount').val(rowData.discount || 0);
+                    row.find('.tax').val(rowData.tax || '');
+                    row.find('.pro_description').val(rowData.description || '');
+
+                    var productTypeElement = row.find('.product_type');
+                    if (rowData.product_type) {
+                        productTypeElement.val(rowData.product_type);
+                    }
+
+                    if (selectedType === 'product' || selectedType === 'salesagent') {
+                        ProductType(productTypeElement, rowData.product_id, 'edit');
+                    } else {
+                        row.find('.item').val(rowData.product_id || '0');
+                    }
+                }
+            }
+
+            function syncEditRowNames() {
+                if (acction !== 'edit') {
+                    return;
+                }
+
+                $('.section_div .repeater [data-repeater-item]').each(function(index) {
+                    var row = $(this);
+                    row.find('.id').attr('name', 'items[' + index + '][id]');
+                    row.find('.product_type').attr('name', 'items[' + index + '][product_type]');
+                    row.find('.item').attr('name', 'items[' + index + '][item]');
+                    row.find('.quantity').attr('name', 'items[' + index + '][quantity]');
+                    row.find('.price').attr('name', 'items[' + index + '][price]');
+                    row.find('.discount').attr('name', 'items[' + index + '][discount]');
+                    row.find('.tax').attr('name', 'items[' + index + '][tax]');
+                    row.find('.itemTaxPrice').attr('name', 'items[' + index + '][itemTaxPrice]');
+                    row.find('.itemTaxRate').attr('name', 'items[' + index + '][itemTaxRate]');
+                    row.find('.pro_description').attr('name', 'items[' + index + '][description]');
+                });
+            }
+
+            function executeEmbeddedScripts(html) {
+                var scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+                var match;
+
+                while ((match = scriptRegex.exec(html)) !== null) {
+                    if (match[1]) {
+                        $.globalEval(match[1]);
+                    }
+                }
+            }
 
             $.ajax({
                 type: 'post',
@@ -1499,25 +1583,13 @@
                 success: function(response) {
                     if (response != false) {
                         $('.pro_name').text(title)
-                        // for item SearchBox ( this function is  custom Js )
-                        JsSearchBox();
-
-                        var value = response.order;
-                        if (typeof value != 'undefined' && value.length != 0) {
-                            value = JSON.parse(value);
-                            $repeater.setList(value);
-                            for (var i = 0; i < value.length; i++) {
-                                var courseValue = value[i]
-                                    .course; // Assuming value[i].course contains the desired value
-                                var tr = $('#sortable-table tbody').find('tr').filter(function() {
-                                    $(this).find('.item').val() == courseValue;
-                                });
-
-                            }
-
-                        }
                         $("#loader").addClass('d-none');
                         $('.section_div').html(response.html);
+                        executeEmbeddedScripts(response.html);
+                        setTimeout(function() {
+                            hydrateEditItems(type);
+                            syncEditRowNames();
+                        }, 120);
                         const elementsToRemove = document.querySelectorAll('.bs-pass-para.repeater-action-btn');
                         if (elementsToRemove.length > 0) {
                             elementsToRemove[0].remove();
@@ -1555,14 +1627,14 @@
 
         });
     </script>
-     <script>
+    <script>
         $(document).on('change', "#restaurant_order", function() {
 
             setTimeout(() => {
                 var title = 'Restaurant Menu';
                 var project_id = '0';
                 var restaurant_order = $('#restaurant_order').val();
-                SectionGet('restaurantmenu', project_id, title,restaurant_order);
+                SectionGet('restaurantmenu', project_id, title, restaurant_order);
             }, 3000);
         });
     </script>
@@ -1599,6 +1671,13 @@
 
             var valueToMatch = "{{ $invoice->account_type }}";
             $('#account_type').val(valueToMatch).trigger('change');
+
+            var invoiceForm = $('#account_type').closest('form');
+            if (invoiceForm.length) {
+                invoiceForm.on('submit', function() {
+                    syncEditRowNames();
+                });
+            }
         });
     </script>
 
@@ -1634,5 +1713,152 @@
         //         $("#loader").addClass('d-none');
         //     }, 3000);
         // };
+    </script>
+    <script>
+        function ProductType(data, id = null, type = null) {
+            var product_type = data.val();
+            var selector = data;
+            var itemSelect = selector.closest('tr').find('.product_id.item').attr('name');
+
+            var productItem = $('.product_id');
+            var values = [];
+
+            for (var j = 0; j < productItem.length; j++) {
+                var val = productItem[j].value.trim();
+                if (val !== '') {
+                    values.push(val);
+                }
+            }
+            var productItems = values.join(',');
+            var account_type = $('#account_type').val();
+
+            console.log('ProductType: triggering for', product_type);
+
+            $.ajax({
+                url: '{{ route('get.item') }}',
+                type: 'POST',
+                data: {
+                    "product_type": product_type,
+                    "productItems": productItems,
+                    "type": type,
+                    "_token": "{{ csrf_token() }}",
+                },
+                beforeSend: function() {
+                    $(".loader-wrapper").removeClass('d-none');
+                },
+                success: function(data) {
+                    var product_select = '';
+                    if (account_type == 'SalesAgent') {
+                        product_select = `<div class="input-group">
+                                                <select class="form-control product_id item" name="${itemSelect}"
+                                                    placeholder="Select Item" data-url="{{ route('invoice.product') }}" required = 'required' disabled>
+                                                </select>
+                                                <button class="btn btn-primary quick-add-service-btn" type="button" data-title="{{ __('Create New Service') }}" data-url="{{ route('product-service.quick.create') }}" data-size="lg" data-ajax-popup="true" >
+                                                    <i class="ti ti-plus"></i>
+                                                </button>
+                                              </div>`;
+                    } else {
+                        product_select = `<div class="input-group">
+                                                <select class="form-control product_id item js-searchBox" name="${itemSelect}"
+                                                    placeholder="Select Item" data-url="{{ route('invoice.product') }}" required = 'required'>
+                                                </select>
+                                                <button class="btn btn-primary quick-add-service-btn" type="button" data-title="{{ __('Create New Service') }}" data-url="{{ route('product-service.quick.create') }}" data-size="lg" data-ajax-popup="true" >
+                                                    <i class="ti ti-plus"></i>
+                                                </button>
+                                              </div>`;
+                    }
+
+                    selector.closest('tr').find('.product_id').empty();
+                    selector.closest('tr').find('.product_div').html(product_select);
+
+                    selector.closest('tr').find('.product_id').append(
+                        '<option value="0"> {{ __('Select Item') }} </option>');
+                    $.each(data, function(key, value) {
+                        var selected = (key == id) ? 'selected' : '';
+                        selector.closest('tr').find('.product_id').append('<option value="' + key +
+                            '" ' + selected + '>' + value + '</option>');
+                    });
+
+                    if (type == 'edit') {
+                        if (typeof changeItem === 'function') {
+                            changeItem(selector.closest('tr').find('.product_id'));
+                        }
+                    } else {
+                        if (typeof items === 'function') {
+                            items(selector.closest('tr').find('.product_id'));
+                        }
+                    }
+
+                    if (window.JsSearchBox) {
+                        JsSearchBox();
+                    }
+                    $(".loader-wrapper").addClass('d-none');
+                }
+            });
+        }
+
+        $(document).on('click', '#submit-quick-add-service', function(e) {
+            e.preventDefault();
+            console.log('Quick Add Service: Submit clicked');
+            var form = $(this).closest('form');
+
+            if (!form[0].checkValidity()) {
+                var invalidFields = form.find(':invalid');
+                if (invalidFields.length > 0) {
+                    var firstInvalid = $(invalidFields[0]);
+                    var label = $("label[for='" + firstInvalid.attr('id') + "']").text() ||
+                        firstInvalid.closest('.form-group').find('label').text() ||
+                        firstInvalid.attr('placeholder') ||
+                        firstInvalid.attr('name');
+
+                    toastrs('Error', 'Please fill in the required field: ' + label, 'error');
+                }
+                form[0].reportValidity();
+                return;
+            }
+
+            var url = form.attr('action');
+            var formData = new FormData(form[0]);
+            var targetSelect = window.activeQuickAddSelect;
+
+            console.log('Quick Add Service: Sending AJAX to', url);
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    console.log('Quick Add Service: Response received', response);
+                    if (response.status == 'success') {
+                        toastrs('Success', response.msg, 'success');
+                        $('#commonModal').modal('hide');
+
+                        $('.product_id.item').each(function() {
+                            var select = $(this);
+                            select.append('<option value="' + response.data.id + '">' + response
+                                .data.name + '</option>');
+                        });
+
+                        if (targetSelect && targetSelect.length) {
+                            targetSelect.val(response.data.id).trigger('change');
+                        }
+                    } else {
+                        toastrs('Error', response.msg, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Quick Add Service: AJAX Error', xhr);
+                    var error = xhr.responseJSON ? xhr.responseJSON.msg : 'Something went wrong';
+                    toastrs('Error', error, 'error');
+                }
+            });
+        });
+
+        $(document).on('click', '.quick-add-service-btn', function() {
+            window.activeQuickAddSelect = $(this).closest('.input-group').find('select.item');
+            console.log('Quick Add Service: Target select stored', window.activeQuickAddSelect);
+        });
     </script>
 @endpush

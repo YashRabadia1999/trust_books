@@ -1042,6 +1042,9 @@ body.custom-color .slider {
 .formTextbox {
     display: block;
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    flex: 1 1 auto;
     padding: 0.575rem 1rem;
     font-size: 0.875rem;
     font-weight: 400;
@@ -1055,6 +1058,21 @@ body.custom-color .slider {
     appearance: none;
     border-radius: 6px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.product_div .input-group {
+    width: 100%;
+    flex-wrap: nowrap;
+}
+
+.product_div .input-group > .formTextbox {
+    width: auto !important;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.product_div .input-group > .quick-add-service-btn {
+    flex: 0 0 auto;
 }
 
 body.theme-1 .formTextbox:focus {

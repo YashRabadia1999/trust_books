@@ -19,6 +19,8 @@ use Workdo\ProductService\Http\Controllers\UnitController;
 */
 
 Route::group(['middleware' => ['web', 'auth', 'verified','PlanModuleCheck:ProductService']], function () {
+    Route::get('product-service/quick/create', [ProductServiceController::class, 'quickCreate'])->name('product-service.quick.create');
+    Route::post('product-service/quick/store', [ProductServiceController::class, 'quickStore'])->name('product-service.quick.store');
     Route::resource('product-service', ProductServiceController::class);
     Route::resource('units', UnitController::class);
     Route::resource('category', CategoryController::class);

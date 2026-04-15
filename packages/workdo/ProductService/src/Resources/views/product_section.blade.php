@@ -127,8 +127,8 @@
                                 </div>
                                 @stack('add_column_in_productservice')
                                 <div class="form-group col-md-6">
-                                    {{ Form::label('unit_id', __('Unit'), ['class' => 'form-label']) }}<x-required></x-required>
-                                    {{ Form::select('unit_id', $unit, !empty($productService->unit_id)?$productService->unit_id:'', ['class' => 'form-control', 'required' => 'required']) }}
+                                    {{ Form::label('unit_id', __('Unit'), ['class' => 'form-label']) }}
+                                    {{ Form::select('unit_id', $unit, !empty($productService->unit_id)?$productService->unit_id:'', ['class' => 'form-control']) }}
                                 </div>
 
                                 <div class="form-group col-md-6 quantity">

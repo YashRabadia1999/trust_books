@@ -1710,14 +1710,14 @@ class InvoiceController extends Controller
             // dd(module_is_active('SmsCredit'));
             // Send SMS notification to customer
             // if (module_is_active('SmsCredit')) {
-                try {
-                    $customerUser = User::find($invoice->user_id);
-                    if ($customerUser) {
-                        SmsService::sendPaymentReceivedSms($invoice, $invoicePayment, $customerUser);
-                    }
-                } catch (\Exception $e) {
-                    \Log::error('Payment SMS Error: ' . $e->getMessage());
+            try {
+                $customerUser = User::find($invoice->user_id);
+                if ($customerUser) {
+                    SmsService::sendPaymentReceivedSms($invoice, $invoicePayment, $customerUser);
                 }
+            } catch (\Exception $e) {
+                \Log::error('Payment SMS Error: ' . $e->getMessage());
+            }
             // }
 
             //Email notification
@@ -2401,7 +2401,8 @@ class InvoiceController extends Controller
         }
 
         foreach ($request->items as $item) {
-            if (empty($item['item']) && $item['item'] == 0) {
+            $selectedItem = $item['item'] ?? ($item['product_id'] ?? null);
+            if (empty($selectedItem) || $selectedItem == 0) {
                 return redirect()->back()->with('error', __('Please select an item'));
             }
         }
@@ -2725,8 +2726,9 @@ class InvoiceController extends Controller
 
             return redirect()->back()->with('error', $messages->first());
         }
-        foreach ($request->items as $item) {
-            if (empty($item['item']) && $item['item'] == 0) {
+        foreach ((array) $request->items as $item) {
+            $selectedItem = $item['item'] ?? ($item['product_id'] ?? null);
+            if (empty($selectedItem) || $selectedItem == 0) {
                 return redirect()->back()->with('error', __('Please select an item'));
             }
         }
@@ -3226,7 +3228,8 @@ class InvoiceController extends Controller
         }
 
         foreach ($request->items as $item) {
-            if (empty($item['item']) && $item['item'] == 0) {
+            $selectedItem = $item['item'] ?? ($item['product_id'] ?? null);
+            if (empty($selectedItem) || $selectedItem == 0) {
                 return redirect()->back()->with('error', __('Please select an item'));
             }
         }
@@ -3307,7 +3310,8 @@ class InvoiceController extends Controller
             return redirect()->back()->with('error', $messages->first());
         }
         foreach ($request->items as $item) {
-            if (empty($item['item']) && $item['item'] == 0) {
+            $selectedItem = $item['item'] ?? ($item['product_id'] ?? null);
+            if (empty($selectedItem) || $selectedItem == 0) {
                 return redirect()->back()->with('error', __('Please select an item'));
             }
         }
@@ -3661,8 +3665,50 @@ class InvoiceController extends Controller
 
             return redirect()->route('invoice.index')->with('error', $messages->first());
         }
+        $normalizedItems = [];
+        foreach ((array) $request->input('items', []) as $item) {
+            $itemId = $item['id'] ?? null;
+            $selectedItem = $item['item'] ?? ($item['product_id'] ?? null);
+
+            // In edit mode, some UI states submit row `id` but omit `item`.
+            // Recover the original product so update does not fail for unchanged rows.
+            if ((empty($selectedItem) || $selectedItem == 0) && !empty($itemId)) {
+                $existingInvoiceProduct = InvoiceProduct::find($itemId);
+                if (!empty($existingInvoiceProduct)) {
+                    $selectedItem = $existingInvoiceProduct->product_id;
+                    if (empty($item['product_type'])) {
+                        $item['product_type'] = $existingInvoiceProduct->product_type;
+                    }
+                }
+            }
+
+            $hasContent = !empty($selectedItem)
+                || !empty($item['quantity'])
+                || !empty($item['price'])
+                || !empty($item['discount'])
+                || !empty($item['tax'])
+                || !empty($item['description'])
+                || !empty($item['product_type'])
+                || !empty($item['id']);
+
+            if (!$hasContent) {
+                continue;
+            }
+
+            $item['item'] = $selectedItem;
+            $item['product_id'] = $selectedItem;
+            $normalizedItems[] = $item;
+        }
+
+        if (empty($normalizedItems)) {
+            return redirect()->back()->with('error', __('Please select an item'));
+        }
+
+        $request->merge(['items' => $normalizedItems]);
+
         foreach ($request->items as $item) {
-            if (empty($item['item']) && $item['item'] == 0) {
+            $selectedItem = $item['item'] ?? ($item['product_id'] ?? null);
+            if (empty($selectedItem) || $selectedItem == 0) {
                 return redirect()->back()->with('error', __('Please select an item'));
             }
         }
@@ -3690,21 +3736,32 @@ class InvoiceController extends Controller
         if (module_is_active('CustomField')) {
             \Workdo\CustomField\Entities\CustomField::saveData($invoice, $request->customField);
         }
-        $products = $request->items;
+        $products = (array) $request->items;
         foreach ($products as $key => $item) {
+            $selectedItem = $item['item'] ?? ($item['product_id'] ?? null);
+            $itemId = $item['id'] ?? null;
+            $itemQuantity = $item['quantity'] ?? 0;
+            $itemTaxPrice = $item['itemTaxPrice'] ?? 0;
+            $itemDiscount = $item['discount'] ?? 0;
+            $itemPrice = $item['price'] ?? 0;
+            $itemTax = $item['tax'] ?? null;
+            $itemDescription = $item['description'] ?? '';
+            $itemProductType = $item['product_type'] ?? null;
 
-            $invoiceProduct = InvoiceProduct::find($item['id']);
+            $invoiceProduct = !empty($itemId) ? InvoiceProduct::find($itemId) : null;
 
             if ($invoiceProduct == null) {
                 $invoiceProduct = new InvoiceProduct();
                 $invoiceProduct->invoice_id = $invoice->id;
 
-                Invoice::total_quantity('minus', $item['quantity'], $item['item']);
+                if (!empty($selectedItem)) {
+                    Invoice::total_quantity('minus', $itemQuantity, $selectedItem);
+                }
 
                 //Warehouse Stock Report
-                $product = ProductService::find($invoiceProduct->product_id);
+                $product = !empty($selectedItem) ? ProductService::find($selectedItem) : null;
                 if (!empty($product) && !empty($product->warehouse_id)) {
-                    Invoice::warehouse_quantity('minus', $invoiceProduct->quantity, $invoiceProduct->product_id, $product->warehouse_id);
+                    Invoice::warehouse_quantity('minus', $itemQuantity, $selectedItem, $product->warehouse_id);
                 }
 
                 //Product Stock Report.
@@ -3712,13 +3769,13 @@ class InvoiceController extends Controller
                     $type = 'invoice';
                     $type_id = $invoice->id;
 
-                    $description = $item['quantity'] . '  ' . __(' quantity sold in invoice') . ' ' . Invoice::invoiceNumberFormat($invoice->invoice_id);
-                    if (empty($item['id'])) {
-                        Invoice::addProductStock($item['item'], $item['quantity'], $type, $description, $type_id);
+                    $description = $itemQuantity . '  ' . __(' quantity sold in invoice') . ' ' . Invoice::invoiceNumberFormat($invoice->invoice_id);
+                    if (empty($itemId) && !empty($selectedItem)) {
+                        Invoice::addProductStock($selectedItem, $itemQuantity, $type, $description, $type_id);
                     }
                 }
 
-                $updatePrice = ($item['price'] * $item['quantity']) + ($item['itemTaxPrice']) - ($item['discount']); //updateUserBalance
+                $updatePrice = ($itemPrice * $itemQuantity) + $itemTaxPrice - $itemDiscount; //updateUserBalance
 
             } else {
                 Invoice::total_quantity('plus', $invoiceProduct->quantity, $invoiceProduct->product_id);
@@ -3730,31 +3787,31 @@ class InvoiceController extends Controller
                 }
 
                 //Product Stock Report.
-                if (module_is_active('Account') && isset($item['item'])) {
+                if (module_is_active('Account') && !empty($selectedItem)) {
                     $type = 'invoice';
                     $type_id = $invoice->id;
-                    \Workdo\Account\Entities\StockReport::where('type', '=', 'invoice')->where('type_id', '=', $invoice->id)->where('product_id', $item['item'])->delete();
-                    $description = $item['quantity'] . '  ' . __(' quantity sold in invoice') . ' ' . Invoice::invoiceNumberFormat($invoice->invoice_id);
-                    if (!empty($item['id'])) {
-                        Invoice::addProductStock($item['item'], $item['quantity'], $type, $description, $type_id);
+                    \Workdo\Account\Entities\StockReport::where('type', '=', 'invoice')->where('type_id', '=', $invoice->id)->where('product_id', $selectedItem)->delete();
+                    $description = $itemQuantity . '  ' . __(' quantity sold in invoice') . ' ' . Invoice::invoiceNumberFormat($invoice->invoice_id);
+                    if (!empty($itemId)) {
+                        Invoice::addProductStock($selectedItem, $itemQuantity, $type, $description, $type_id);
                     }
                 }
             }
 
-            if (isset($item['item'])) {
-                $invoiceProduct->product_id = $item['item'];
+            if (!empty($selectedItem)) {
+                $invoiceProduct->product_id = $selectedItem;
             }
-            $invoiceProduct->product_type = $item['product_type'];
-            $invoiceProduct->quantity = $item['quantity'];
-            $invoiceProduct->tax = $item['tax'];
-            $invoiceProduct->discount = isset($item['discount']) ? $item['discount'] : 0;
-            $invoiceProduct->price = $item['price'];
-            $invoiceProduct->description = str_replace(array('\'', '"', '`', '{', "\n"), ' ', $item['description']);
+            $invoiceProduct->product_type = $itemProductType;
+            $invoiceProduct->quantity = $itemQuantity;
+            $invoiceProduct->tax = $itemTax;
+            $invoiceProduct->discount = $itemDiscount;
+            $invoiceProduct->price = $itemPrice;
+            $invoiceProduct->description = str_replace(array('\'', '"', '`', '{', "\n"), ' ', $itemDescription);
             $invoiceProduct->save();
 
             //inventory management (Quantity)
-            if ($item['id'] > 0) {
-                Invoice::total_quantity('minus', $item['quantity'], $invoiceProduct->product_id);
+            if (!empty($itemId)) {
+                Invoice::total_quantity('minus', $itemQuantity, $invoiceProduct->product_id);
             }
 
             //Warehouse Stock Report

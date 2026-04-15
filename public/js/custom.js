@@ -437,7 +437,7 @@ function JsSearchBox() {
     if ($(".js-searchBox").length) {
         $(".js-searchBox").each(function (index) {
             if ($(this).parent().find('.formTextbox').length == 0) {
-                $(this).searchBox({ elementWidth: '250' });
+                $(this).searchBox();
             }
         });
     }

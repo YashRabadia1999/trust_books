@@ -1,9 +1,14 @@
 @php
     $company_settings = getCompanyAllSetting();
+    $repeaterItems = collect([null]);
+    if ($acction == 'edit' && !empty($invoice) && !empty($invoice->items) && $invoice->items->count() > 0) {
+        $repeaterItems = $invoice->items;
+    }
 @endphp
 
 <h5 class="h4 d-inline-block font-weight-400 mb-4">{{ __('Items') }}</h5>
-<div class="card repeater" @if ($acction == 'edit') data-value='{!! json_encode($invoice->items) !!}' @endif>
+<div class="card repeater"
+    @if ($acction == 'edit') data-value="{{ base64_encode(json_encode($invoice->items)) }}" @endif>
     <div class="item-section p-3 pb-0">
         <div class="row justify-content-between align-items-center">
             <div class="col-md-12 d-flex align-items-center justify-content-md-end px-4">
@@ -31,75 +36,88 @@
                     </tr>
                 </thead>
 
-                <tbody class="ui-sortable" data-repeater-item>
-                    <tr>
-                        {{ Form::hidden('id', null, ['class' => 'form-control id']) }}
-                        <td class="form-group pt-0">
-                            {{ Form::select('product_type', $product_type, null, ['class' => 'form-control product_type ', 'required' => 'required', 'placeholder' => '--']) }}
-                        </td>
-                        <td width="25%" class="form-group pt-0 product_div">
-                            <select name="item" class="form-control product_id item  js-searchBox"
-                                data-url="{{ route('invoice.product') }}" required>
-                                <option value="0">{{ '--' }}</option>
-                                @foreach ($product_services as $key => $product_service)
-                                    <option value="{{ $key }}">{{ $product_service }}</option>
-                                @endforeach
-                            </select>
-                            @if (empty($product_services_count))
-                                <div class=" text-xs">{{ __('Please create Product first.') }}<a
-                                        href="{{ route('product-service.index') }}"><b>{{ __('Add Product') }}</b></a>
+                @foreach ($repeaterItems as $rowItem)
+                    <tbody class="ui-sortable" data-repeater-item>
+                        <tr>
+                            {{ Form::hidden('id', !empty($rowItem) ? $rowItem->id : null, ['class' => 'form-control id']) }}
+                            <td class="form-group pt-0">
+                                {{ Form::select('product_type', $product_type, !empty($rowItem) ? $rowItem->product_type : null, ['class' => 'form-control product_type ', 'required' => 'required', 'placeholder' => '--']) }}
+                            </td>
+                            <td width="25%" class="form-group pt-0 product_div">
+                                <div class="input-group">
+                                    <select name="item" class="form-control product_id item  js-searchBox"
+                                        data-url="{{ route('invoice.product') }}" required>
+                                        <option value="0">{{ '--' }}</option>
+                                        @foreach ($product_services as $key => $product_service)
+                                            <option value="{{ $key }}"
+                                                {{ !empty($rowItem) && (string) $rowItem->product_id === (string) $key ? 'selected' : '' }}>
+                                                {{ $product_service }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button class="btn btn-primary quick-add-service-btn" type="button"
+                                        data-title="{{ __('Create New Service') }}"
+                                        data-url="{{ route('product-service.quick.create') }}" data-size="lg"
+                                        data-ajax-popup="true">
+                                        <i class="ti ti-plus"></i>
+                                    </button>
                                 </div>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="form-group price-input input-group search-form mb-0" style="width: 160px">
-                                {{ Form::text('quantity', '', ['class' => 'form-control quantity', 'required' => 'required', 'placeholder' => __('Qty'), 'required' => 'required']) }}
-                                <span class="unit input-group-text bg-transparent"></span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="form-group price-input input-group search-form mb-0" style="width: 160px">
-                                {{ Form::text('price', '', ['class' => 'form-control price', 'required' => 'required', 'placeholder' => __('Price'), 'required' => 'required']) }}
-                                <span
-                                    class="input-group-text bg-transparent">{{ isset($company_settings['defult_currancy_symbol']) ? $company_settings['defult_currancy_symbol'] : '' }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="form-group price-input input-group search-form mb-0" style="width: 160px">
-                                {{ Form::text('discount', '', ['class' => 'form-control discount', 'required' => 'required', 'placeholder' => __('Discount')]) }}
-                                <span
-                                    class="input-group-text bg-transparent">{{ isset($company_settings['defult_currancy_symbol']) ? $company_settings['defult_currancy_symbol'] : '' }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="form-group mb-0">
-                                <div class="input-group colorpickerinput">
-                                    <div class="taxes"></div>
-                                    {{ Form::hidden('tax', '', ['class' => 'form-control tax text-dark']) }}
-                                    {{ Form::hidden('itemTaxPrice', '', ['class' => 'form-control itemTaxPrice']) }}
-                                    {{ Form::hidden('itemTaxRate', '', ['class' => 'form-control itemTaxRate']) }}
+                                @if (empty($product_services_count))
+                                    <div class=" text-xs">{{ __('Please create Product first.') }}<a
+                                            href="{{ route('product-service.index') }}"><b>{{ __('Add Product') }}</b></a>
+                                    </div>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="form-group price-input input-group search-form mb-0" style="width: 160px">
+                                    {{ Form::text('quantity', !empty($rowItem) ? $rowItem->quantity : '', ['class' => 'form-control quantity', 'required' => 'required', 'placeholder' => __('Qty'), 'required' => 'required']) }}
+                                    <span class="unit input-group-text bg-transparent"></span>
                                 </div>
-                            </div>
-                        </td>
+                            </td>
+                            <td>
+                                <div class="form-group price-input input-group search-form mb-0" style="width: 160px">
+                                    {{ Form::text('price', !empty($rowItem) ? $rowItem->price : '', ['class' => 'form-control price', 'required' => 'required', 'placeholder' => __('Price'), 'required' => 'required']) }}
+                                    <span
+                                        class="input-group-text bg-transparent">{{ isset($company_settings['defult_currancy_symbol']) ? $company_settings['defult_currancy_symbol'] : '' }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group price-input input-group search-form mb-0" style="width: 160px">
+                                    {{ Form::text('discount', !empty($rowItem) ? $rowItem->discount : '', ['class' => 'form-control discount', 'required' => 'required', 'placeholder' => __('Discount')]) }}
+                                    <span
+                                        class="input-group-text bg-transparent">{{ isset($company_settings['defult_currancy_symbol']) ? $company_settings['defult_currancy_symbol'] : '' }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group mb-0">
+                                    <div class="input-group colorpickerinput">
+                                        <div class="taxes"></div>
+                                        {{ Form::hidden('tax', !empty($rowItem) ? $rowItem->tax : '', ['class' => 'form-control tax text-dark']) }}
+                                        {{ Form::hidden('itemTaxPrice', '', ['class' => 'form-control itemTaxPrice']) }}
+                                        {{ Form::hidden('itemTaxRate', '', ['class' => 'form-control itemTaxRate']) }}
+                                    </div>
+                                </div>
+                            </td>
 
-                        <td class="text-end amount">{{ __('0.00') }}</td>
-                        <td>
-                            <a href="#" class="action-btn ms-2 float-end" data-repeater-delete>
-                                <div class="mx-3 btn btn-sm d-inline-flex align-items-center m-2 p-2 bg-danger">
-                                    <i class="ti ti-trash text-white" data-bs-toggle="tooltip" data-bs-original-title="Delete"></i>
+                            <td class="text-end amount">{{ __('0.00') }}</td>
+                            <td>
+                                <a href="#" class="action-btn ms-2 float-end" data-repeater-delete>
+                                    <div class="mx-3 btn btn-sm d-inline-flex align-items-center m-2 p-2 bg-danger">
+                                        <i class="ti ti-trash text-white" data-bs-toggle="tooltip"
+                                            data-bs-original-title="Delete"></i>
+                                    </div>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="form-group mb-0">
+                                    {{ Form::textarea('description', !empty($rowItem) ? $rowItem->description : null, ['class' => 'form-control pro_description', 'rows' => '2', 'placeholder' => __('Description')]) }}
                                 </div>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <div class="form-group mb-0">
-                                {{ Form::textarea('description', null, ['class' => 'form-control pro_description', 'rows' => '2', 'placeholder' => __('Description')]) }}
-                            </div>
-                        </td>
-                        <td colspan="5"></td>
-                    </tr>
-                </tbody>
+                            </td>
+                            <td colspan="5"></td>
+                        </tr>
+                    </tbody>
+                @endforeach
                 <tfoot>
                     <tr>
                         <td>&nbsp;</td>
@@ -157,9 +175,12 @@
 <script>
     var selector = "body";
     if ($(selector + " .repeater").length) {
-        var $dragAndDrop = $("body .repeater tbody").sortable({
-            handle: '.sort-handler'
-        });
+        var $dragAndDrop = null;
+        if ($.fn.sortable) {
+            $dragAndDrop = $("body .repeater tbody").sortable({
+                handle: '.sort-handler'
+            });
+        }
         var $repeater = $(selector + ' .repeater').repeater({
             initEmpty: false,
             defaultValues: {
@@ -194,7 +215,8 @@
                     var inputs_quantity = $(".quantity");
                     var priceInput = $('.price');
                     for (var j = 0; j < priceInput.length; j++) {
-                        totalItemPrice += (parseFloat(priceInput[j].value) * parseFloat(inputs_quantity[j].value));
+                        totalItemPrice += (parseFloat(priceInput[j].value) * parseFloat(
+                            inputs_quantity[j].value));
                     }
                     var inputs = $(".amount");
                     var subTotal = 0;
@@ -216,88 +238,24 @@
                 });
             },
             ready: function(setIndexes) {
-                $dragAndDrop.on('drop', setIndexes);
+                if ($dragAndDrop) {
+                    $dragAndDrop.on('drop', setIndexes);
+                }
             },
             isFirstItemUndeletable: true
         });
         var value = $(selector + " .repeater").attr('data-value');
-        if (typeof value != 'undefined' && value.length != 0) {
-            value = JSON.parse(value);
-            $repeater.setList(value);
+        if ('{{ $acction }}' !== 'edit' && typeof value != 'undefined' && value.length != 0) {
+            try {
+                value = JSON.parse(atob(value));
+                $repeater.setList(value);
+            } catch (error) {
+                console.error('Failed to parse invoice items for repeater:', error);
+            }
         }
     }
 </script>
-<script>
-    $(document).on('change', '.product_type', function() {
-        ProductType($(this));
-    });
 
-    function ProductType(data, id = null, type = null) {
-        var product_type = data.val();
-        var selector = data;
-        var itemSelect = selector.parent().parent().find('.product_id.item').attr('name');
-        
-        var productItem = $('.product_id');
-        var values = [];
-        
-        for (var j = 0; j < productItem.length; j++) {
-            var val = productItem[j].value.trim();
-            if (val !== '') {
-                values.push(val);
-            }
-        }
-        var productItems = values.join(',');
-        var account_type = $('#account_type').val();
-        $.ajax({
-            url: '{{ route('get.item') }}',
-            type: 'POST',
-            data: {
-                "product_type": product_type,
-                "productItems": productItems,
-                "type": type,
-                "_token": "{{ csrf_token() }}",
-            },
-            beforeSend: function() {
-                    $(".loader-wrapper").removeClass('d-none');
-                },
-            success: function(data) {
-
-                if(account_type == 'SalesAgent'){
-                    var product_select = `<select class="form-control product_id item" name="${itemSelect}"
-                                        placeholder="Select Item" data-url="{{ route('invoice.product') }}" required = 'required' disabled>
-                                        </select>`;
-                }
-                else {
-                    var product_select = `<select class="form-control product_id item js-searchBox" name="${itemSelect}"
-                                            placeholder="Select Item" data-url="{{ route('invoice.product') }}" required = 'required'>
-                                            </select>`;
-                }
-                
-                selector.parent().parent().find('.product_id').empty();
-                selector.parent().parent().find('.product_div').html(product_select);
-
-                selector.parent().parent().find('.product_id').append(
-                    '<option value="0"> {{ __('Select Item') }} </option>');
-                $.each(data, function(key, value) {
-                    var selected = (key == id) ? 'selected' : '';
-                    selector.parent().parent().find('.product_id').append('<option value="' + key +
-                        '" ' + selected + '>' + value + '</option>');
-                });
-                if (type == 'edit') {
-                    changeItem(selector.parent().parent().find('.product_id'));
-                } else {
-                    items(selector.parent().parent().find('.product_id'));
-                }
-                // Initialize your searchBox here if needed
-                selector.parent().parent().find(".js-searchBox").searchBox({
-                    elementWidth: '250'
-                });
-                selector.parent().parent().find('.unit.input-group-text').text("");
-                $(".loader-wrapper").addClass('d-none');
-            }
-        });
-    }
-</script>
 @if ($acction == 'edit')
     <script>
         $(document).ready(function() {
@@ -306,24 +264,51 @@
             var value = $(selector + " .repeater").attr('data-value');
             var type = '{{ $type }}';
             if (typeof value != 'undefined' && value.length != 0) {
-                value = JSON.parse(value);
-                $repeater.setList(value);
+                try {
+                    value = JSON.parse(atob(value));
+                } catch (error) {
+                    console.error('Failed to parse invoice items in edit mode:', error);
+                    value = [];
+                }
 
                 // Remove delete button for first row
                 $('.repeater [data-repeater-item]').first().find('[data-repeater-delete]').remove();
-                
+
+                // Fallback hydration: map invoice items to repeater rows by index.
+                // This avoids blank edit rows when repeater setList cannot map complex row markup reliably.
+                var createBtn = $('.repeater [data-repeater-create]').first();
+                var itemRows = $('.repeater [data-repeater-item]');
+
+                while (itemRows.length < value.length) {
+                    createBtn.trigger('click');
+                    itemRows = $('.repeater [data-repeater-item]');
+                }
+
                 for (var i = 0; i < value.length; i++) {
-                    var tr = $('#sortable-table .id[value="' + value[i].id + '"]').parent();
-                    tr.find('.item').val(value[i].product_id);
+                    var row = $(itemRows[i]);
+                    var rowData = value[i] || {};
+
+                    row.find('.id').val(rowData.id || '');
+                    row.find('.pro_description').val(rowData.description || '');
+                    row.find('.quantity').val(rowData.quantity || '');
+                    row.find('.price').val(rowData.price || '');
+                    row.find('.discount').val(rowData.discount || 0);
+                    row.find('.tax').val(rowData.tax || '');
+
+                    var productTypeElement = row.find('.product_type');
+                    if (rowData.product_type) {
+                        productTypeElement.val(rowData.product_type);
+                    }
+
                     if (type == 'product' || type == 'salesagent') {
-                        var element = tr.find('.product_type');
-                        var product_id = value[i].product_id;
-                        ProductType(element, product_id, 'edit');
+                        ProductType(productTypeElement, rowData.product_id, 'edit');
+                    } else {
+                        row.find('.item').val(rowData.product_id || '0');
                     }
-                    if(type == 'salesagent')
-                    {
-                        $('.item-section').addClass('d-none');
-                    }
+                }
+
+                if (type == 'salesagent') {
+                    $('.item-section').addClass('d-none');
                 }
             }
             const elementsToRemove = document.querySelectorAll('.bs-pass-para.repeater-action-btn');
@@ -361,15 +346,15 @@
                     if (invoiceItems != null) {
                         var amount = (invoiceItems.price * invoiceItems.quantity);
 
-                        $(el.parent().parent().find('.quantity')).val(invoiceItems
+                        $(el.closest('tr').find('.quantity')).val(invoiceItems
                             .quantity);
-                        $(el.parent().parent().find('.price')).val(invoiceItems.price);
-                        $(el.parent().parent().find('.discount')).val(invoiceItems
+                        $(el.closest('tr').find('.price')).val(invoiceItems.price);
+                        $(el.closest('tr').find('.discount')).val(invoiceItems
                             .discount);
                     } else {
-                        $(el.parent().parent().find('.quantity')).val(1);
-                        $(el.parent().parent().find('.price')).val(item.product.sale_price);
-                        $(el.parent().parent().find('.discount')).val(0);
+                        $(el.closest('tr').find('.quantity')).val(1);
+                        $(el.closest('tr').find('.price')).val(item.product.sale_price);
+                        $(el.closest('tr').find('.discount')).val(0);
                     }
 
 
@@ -394,19 +379,17 @@
                             .product.sale_price * 1));
                     }
 
-                    $(el.parent().parent().find('.itemTaxPrice')).val(itemTaxPrice.toFixed(
+                    $(el.closest('tr').find('.itemTaxPrice')).val(itemTaxPrice.toFixed(
                         2));
-                    $(el.parent().parent().find('.itemTaxRate')).val(totalItemTaxRate
+                    $(el.closest('tr').find('.itemTaxRate')).val(totalItemTaxRate
                         .toFixed(2));
-                    $(el.parent().parent().find('.taxes')).html(taxes);
-                    $(el.parent().parent().find('.tax')).val(tax);
-                    $(el.parent().parent().find('.unit')).html(item.unit);
+                    $(el.closest('tr').find('.taxes')).html(taxes);
+                    $(el.closest('tr').find('.tax')).val(tax);
+                    $(el.closest('tr').find('.unit')).html(item.unit);
 
                     $(".discount").trigger('change');
                 }
             });
         }
     </script>
-
-
 @endif
